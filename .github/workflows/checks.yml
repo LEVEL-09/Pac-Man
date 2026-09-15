@@ -28,6 +28,11 @@ jobs:
             --disallow-untyped-defs \
             --check-untyped-defs
 
+      - name: Run mypy strict
+        run: |
+            uv run mypy . \
+            --strict
+
       - name: Run flake8
         run: uv run flake8 . --exclude=.venv
 
