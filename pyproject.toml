@@ -1,0 +1,15 @@
+[project]
+name = "pac-man"
+version = "0.1.0"
+description = "A Python implementation of the classic Pac-Man arcade game"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "mypy>=2.3.1",
+    "pydocstyle>=6.3.0",
+    "pytest>=9.1.1",
+]
