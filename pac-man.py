@@ -1,5 +1,8 @@
+from pacman.parser import Config
+
+
 def main():
-    print("Hello from pac-man!")
+    config = Config()
 
 
 if __name__ == "__main__":
