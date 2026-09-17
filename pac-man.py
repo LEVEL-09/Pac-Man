@@ -1,8 +1,5 @@
-from pacman.parser import Config
-
-
-def main():
-    config = Config()
+def main() -> None:
+    pass
 
 
 if __name__ == "__main__":

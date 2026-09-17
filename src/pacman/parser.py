@@ -46,6 +46,15 @@ class Config:
         self._data = self.load()
         self.validate(self._data)
 
+        self.game_time = self._data["game"]["level_max_time"]
+        self.pacgum_score = self._data["score"]["pacgum"]
+        self.super_pacgum_score = self._data["score"]["super_pacgum"]
+        self.ghost_score = self._data["score"]["ghost"]
+        self.maze_seed = self._data["maze"]["seed"]
+        self.maze_width = self._data["maze"]["width"]
+        self.maze_height = self._data["maze"]["height"]
+        self.player_lives = self._data["player"]["lives"]
+
     def load(self) -> dict:
         with open(self._file_path, "r") as f:
             return commentjson.load(f)
