@@ -15,7 +15,7 @@ logging.basicConfig(
 
 DEFAULTS = {
     "game": {"level_max_time": 90},
-    "score": {"pacgum": 10, "super_pacgum": 50, "ghost": 20},
+    "score": {"pacgum": 10, "super_pacgum": 50, "ghost": 25},
     "maze": {"seed": 42, "width": 20, "height": 20},
     "player": {"lives": 3},
 }
@@ -140,3 +140,10 @@ class Config:
                     clamped,
                 )
                 value[key] = clamped
+
+            self.logger.info(
+                "Value for '%s' in '%s' set to %s.",
+                key,
+                section,
+                value[key],
+            )
