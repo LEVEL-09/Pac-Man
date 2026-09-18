@@ -5,7 +5,7 @@ MYPY_FLAGS := --warn-return-any --warn-unused-ignores --ignore-missing-imports -
 .PHONY: install run debug clean lint lint-strict test
 
 install:
-	uv sync
+	uv sync --upgrade
 
 run:
 	$(PYTHON) pac-man.py $(CONFIG)
