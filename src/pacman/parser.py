@@ -60,7 +60,14 @@ class Config:
     def load(self) -> dict:
         try:
             with open(self._file_path, "r") as f:
-                return commentjson.load(f)
+                data: Any = commentjson.load(f)
+
+                if not isinstance(data, dict):
+                    raise TypeError(
+                        f"Configuration file {self._file_path} "
+                        "must contain a JSON object"
+                    )
+                return data
 
         except OSError as e:
             raise OSError(
