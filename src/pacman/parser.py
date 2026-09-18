@@ -1,3 +1,11 @@
+"""Command-line argument parsing and JSON configuration handling.
+
+This module exposes the :class:`Config` class, which loads a JSON
+configuration file supplied via the command line, validates its
+contents against expected defaults and value ranges, and exposes the
+resulting settings as attributes for use by the rest of the game.
+"""
+
 import argparse
 import logging
 import os
@@ -30,6 +38,16 @@ RANGES = {
 
 
 def parse_args() -> Path:
+    """Parse command-line arguments and return the config file path.
+
+    Returns:
+        The path to the JSON configuration file passed on the command
+        line.
+
+    Raises:
+        ValueError: If the given path does not have a ``.json``
+            extension.
+    """
     parser = argparse.ArgumentParser()
 
     parser.add_argument("config", help="path to config file")
@@ -42,9 +60,19 @@ def parse_args() -> Path:
 
 
 class Config:
+    """Loads, validates, and exposes the game's configuration.
+
+    On instantiation, the configuration file path is taken from the
+    command line, its contents are loaded and validated against
+    :data:`DEFAULTS` and :data:`RANGES`, and the resulting values are
+    exposed as instance attributes (e.g. ``game_time``,
+    ``pacgum_score``, ``maze_seed``, etc.).
+    """
+
     logger = logging.getLogger()
 
     def __init__(self) -> None:
+        """Parse arguments, load the config file, and validate it."""
         self._file_path = parse_args()
         self._data = self.load()
         self.validate(self._data)
@@ -59,6 +87,17 @@ class Config:
         self.player_lives = self._data["player"]["lives"]
 
     def load(self) -> dict[Any, Any]:
+        """Load and parse the JSON configuration file.
+
+        Returns:
+            The parsed configuration as a dictionary.
+
+        Raises:
+            TypeError: If the file's top-level JSON value is not an
+                object.
+            OSError: If the file cannot be opened or read.
+            ValueError: If the file's contents are not valid JSON.
+        """
         try:
             with open(self._file_path, "r") as f:
                 data: Any = commentjson.load(f)
@@ -81,6 +120,16 @@ class Config:
             ) from e
 
     def validate(self, data: dict[Any, Any]) -> None:
+        """Validate all configuration sections in place.
+
+        Any missing or invalid section is replaced with its default
+        values from :data:`DEFAULTS`. Valid sections are further
+        checked key-by-key via :meth:`_validate_section`.
+
+        Args:
+            data: The configuration dictionary to validate and
+                mutate in place.
+        """
         for section, section_defaults in DEFAULTS.items():
             if section not in data:
                 self.logger.warning(
@@ -103,6 +152,20 @@ class Config:
     def _validate_section(
         self, section: str, value: dict[Any, Any], defaults: dict[Any, Any]
     ) -> None:
+        """Validate and clamp the keys of a single config section.
+
+        Missing or non-integer keys are replaced with their default
+        value. The ``maze.seed`` key is required to be non-negative.
+        All other keys are clamped to the bounds defined in
+        :data:`RANGES`. Warnings are logged for any correction made.
+
+        Args:
+            section: The name of the configuration section (e.g.
+                ``"maze"``).
+            value: The section's dictionary of values, mutated in
+                place.
+            defaults: The default values for this section.
+        """
         for key, default in defaults.items():
             if key not in value:
                 self.logger.warning(
