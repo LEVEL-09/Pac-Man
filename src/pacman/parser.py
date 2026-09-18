@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 import commentjson
 
@@ -57,7 +58,7 @@ class Config:
         self.maze_height = self._data["maze"]["height"]
         self.player_lives = self._data["player"]["lives"]
 
-    def load(self) -> dict:
+    def load(self) -> dict[Any, Any]:
         try:
             with open(self._file_path, "r") as f:
                 data: Any = commentjson.load(f)
@@ -79,7 +80,7 @@ class Config:
                 f"Error parsing JSON file {self._file_path}"
             ) from e
 
-    def validate(self, data: dict) -> None:
+    def validate(self, data: dict[Any, Any]) -> None:
         for section, section_defaults in DEFAULTS.items():
             if section not in data:
                 self.logger.warning(
@@ -100,7 +101,7 @@ class Config:
             self._validate_section(section, value, section_defaults)
 
     def _validate_section(
-        self, section: str, value: dict, defaults: dict
+        self, section: str, value: dict[Any, Any], defaults: dict[Any, Any]
     ) -> None:
         for key, default in defaults.items():
             if key not in value:
@@ -128,8 +129,8 @@ class Config:
             if section == "maze" and key == "seed":
                 if raw < 0:
                     self.logger.warning(
-                        "Invalid value for 'seed' in 'maze'. Must be a positive "
-                        "number. Using default value: %s.",
+                        "Invalid value for 'seed' in 'maze'. Must be a "
+                        "positive number. Using default value: %s.",
                         default,
                     )
                     value[key] = default
@@ -139,7 +140,8 @@ class Config:
             if raw < low or raw > high:
                 clamped = max(low, min(high, raw))
                 self.logger.warning(
-                    "Value for '%s' in '%s' out of range (%s-%s). Clamping to %s.",
+                    "Value for '%s' in '%s' out of range (%s-%s). "
+                    "Clamping to %s.",
                     key,
                     section,
                     low,
