@@ -41,6 +41,8 @@ def parse_args() -> Path:
 
 
 class Config:
+    logger = logging.getLogger()
+
     def __init__(self) -> None:
         self._file_path = parse_args()
         self._data = self.load()
@@ -56,15 +58,24 @@ class Config:
         self.player_lives = self._data["player"]["lives"]
 
     def load(self) -> dict:
-        with open(self._file_path, "r") as f:
-            return commentjson.load(f)
+        try:
+            with open(self._file_path, "r") as f:
+                return commentjson.load(f)
+
+        except OSError as e:
+            raise OSError(
+                f"Error loading file {self._file_path}:\n\t{e.strerror}"
+            )
+
+        except commentjson.JSONLibraryException as e:
+            raise ValueError(
+                f"Error parsing JSON file {self._file_path}"
+            ) from e
 
     def validate(self, data: dict) -> None:
-        logger = logging.getLogger()
-
         for section, section_defaults in DEFAULTS.items():
             if section not in data:
-                logger.warning(
+                self.logger.warning(
                     "Missing '%s' section. Using default values.", section
                 )
                 data[section] = dict(section_defaults)
@@ -73,20 +84,20 @@ class Config:
             value = data[section]
 
             if not isinstance(value, dict):
-                logger.warning(
+                self.logger.warning(
                     "Invalid value for %s. Using default value.", section
                 )
                 data[section] = dict(section_defaults)
                 continue
 
-            self._validate_section(logger, section, value, section_defaults)
+            self._validate_section(section, value, section_defaults)
 
     def _validate_section(
-        self, logger: logging.Logger, section: str, value: dict, defaults: dict
+        self, section: str, value: dict, defaults: dict
     ) -> None:
         for key, default in defaults.items():
             if key not in value:
-                logger.warning(
+                self.logger.warning(
                     "Missing '%s' in '%s'. Using default value: %s.",
                     key,
                     section,
@@ -98,7 +109,7 @@ class Config:
             raw = value[key]
 
             if not isinstance(raw, int):
-                logger.warning(
+                self.logger.warning(
                     "Invalid value for '%s' in '%s'. Using default value: %s.",
                     key,
                     section,
@@ -109,7 +120,7 @@ class Config:
 
             if section == "maze" and key == "seed":
                 if raw < 0:
-                    logger.warning(
+                    self.logger.warning(
                         "Invalid value for 'seed' in 'maze'. Must be a positive "
                         "number. Using default value: %s.",
                         default,
@@ -120,7 +131,7 @@ class Config:
             low, high = RANGES[section][key]
             if raw < low or raw > high:
                 clamped = max(low, min(high, raw))
-                logger.warning(
+                self.logger.warning(
                     "Value for '%s' in '%s' out of range (%s-%s). Clamping to %s.",
                     key,
                     section,
