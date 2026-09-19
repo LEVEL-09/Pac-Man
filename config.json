@@ -1,0 +1,31 @@
+// DEFAULTS
+//     "game": {"level_max_time": 90},
+//     "score": {"pacgum": 10, "super_pacgum": 50, "ghost": 20},
+//     "maze": {"seed": 42, "width": 20, "height": 20},
+//     "player": {"lives": 3},
+
+{
+    "game":
+    {
+        "level_max_time": 40
+    },
+    
+    "score":
+    {
+        "pacgum": 15,
+        "super_pacgum": 58,
+        "ghost": 16
+    },
+    
+    "maze":
+    {
+        "seed": 43,
+        "width": 34,
+        "height": 31
+    },
+    
+    "player":
+    {
+        "lives": 6
+    }
+}

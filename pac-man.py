@@ -1,5 +1,8 @@
-def main():
-    print("Hello from pac-man!")
+"""Entry point script for launching the Pac-Man game."""
+
+
+def main() -> None:
+    """Run the Pac-Man game."""
 
 
 if __name__ == "__main__":
