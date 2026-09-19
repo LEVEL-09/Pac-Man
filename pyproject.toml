@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "commentjson>=0.9.0",
+    "mlx-wrapper",
 ]
 
 [dependency-groups]
@@ -18,3 +19,5 @@ dev = [
 
 [tool.uv]
 package = true
+[tool.uv.sources]
+mlx-wrapper = { git = "https://github.com/abouzkra/MLX-Wrapper.git" }
