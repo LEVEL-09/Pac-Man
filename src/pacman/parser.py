@@ -189,16 +189,6 @@ class Config:
                 value[key] = default
                 continue
 
-            if section == "maze" and key == "seed":
-                if raw < 0:
-                    self.logger.warning(
-                        "Invalid value for 'seed' in 'maze'. Must be a "
-                        "positive number. Using default value: %s.",
-                        default,
-                    )
-                    value[key] = default
-                continue
-
             low, high = RANGES[section][key]
             if raw < low or raw > high:
                 clamped = max(low, min(high, raw))
