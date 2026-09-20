@@ -199,7 +199,7 @@ wheels = [
 [[package]]
 name = "mlx"
 version = "2.4"
-source = { git = "https://github.com/abouzkra/MLX-Wrapper.git?path=mlx-2.4-py3-none-any.whl#c121e2b81575fde83c48d0e6d2e25ad041647716" }
+source = { git = "https://github.com/abouzkra/MLX-Wrapper.git?path=mlx-2.4-py3-none-any.whl#036858f8e3610811330220243699d865ecd7b84c" }
 wheels = [
     { filename = "mlx-2.4-py3-none-any.whl", hash = "sha256:6cfb04a027e80875f68caf87b221e9d4e5b9366ad971c788706c96cc928cad27" },
 ]
@@ -207,7 +207,7 @@ wheels = [
 [[package]]
 name = "mlx-wrapper"
 version = "1.0.0a1"
-source = { git = "https://github.com/abouzkra/MLX-Wrapper.git#c121e2b81575fde83c48d0e6d2e25ad041647716" }
+source = { git = "https://github.com/abouzkra/MLX-Wrapper.git#036858f8e3610811330220243699d865ecd7b84c" }
 dependencies = [
     { name = "mlx" },
     { name = "numpy" },
