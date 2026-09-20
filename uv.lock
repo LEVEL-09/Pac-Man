@@ -188,6 +188,14 @@ wheels = [
 ]
 
 [[package]]
+name = "mazegenerator"
+version = "2.1.0"
+source = { path = "mazegenerator-2.1.0-py3-none-any.whl" }
+wheels = [
+    { filename = "mazegenerator-2.1.0-py3-none-any.whl", hash = "sha256:98e12f7e989cef03dd4411657d7bee12653804aee87a568eddfaf21436ffd4aa" },
+]
+
+[[package]]
 name = "mccabe"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -199,7 +207,7 @@ wheels = [
 [[package]]
 name = "mlx"
 version = "2.4"
-source = { git = "https://github.com/abouzkra/MLX-Wrapper.git?path=mlx-2.4-py3-none-any.whl#c121e2b81575fde83c48d0e6d2e25ad041647716" }
+source = { git = "https://github.com/abouzkra/MLX-Wrapper.git?path=mlx-2.4-py3-none-any.whl#188098d2472ca35835145fb4580053156c2029cc" }
 wheels = [
     { filename = "mlx-2.4-py3-none-any.whl", hash = "sha256:6cfb04a027e80875f68caf87b221e9d4e5b9366ad971c788706c96cc928cad27" },
 ]
@@ -207,7 +215,7 @@ wheels = [
 [[package]]
 name = "mlx-wrapper"
 version = "1.0.0a1"
-source = { git = "https://github.com/abouzkra/MLX-Wrapper.git#c121e2b81575fde83c48d0e6d2e25ad041647716" }
+source = { git = "https://github.com/abouzkra/MLX-Wrapper.git#188098d2472ca35835145fb4580053156c2029cc" }
 dependencies = [
     { name = "mlx" },
     { name = "numpy" },
@@ -322,6 +330,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "commentjson" },
+    { name = "mazegenerator" },
     { name = "mlx-wrapper" },
 ]
 
@@ -336,6 +345,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "commentjson", specifier = ">=0.9.0" },
+    { name = "mazegenerator", path = "mazegenerator-2.1.0-py3-none-any.whl" },
     { name = "mlx-wrapper", git = "https://github.com/abouzkra/MLX-Wrapper.git" },
 ]
 
