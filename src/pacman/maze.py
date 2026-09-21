@@ -1,16 +1,13 @@
 from mazegenerator import MazeGenerator
-from mlx import Mlx
 from mlx_wrapper import MLXApp, Sprite
 
 
 class Maze:
     def __init__(
-        self, mlx: Mlx, mlx_ptr: int, seed: int, width: int, height: int
+        self, mlx_app: MLXApp, width: int, height: int, seed: int
     ) -> None:
-        self.maze = MazeGenerator((width, height), seed=seed)
-        Sprite.blank(mlx, mlx_ptr, 64 * width, 64 * height)
+        self.mlx_app = mlx_app
+        self.maze_generator = MazeGenerator(size=(width, height), seed=seed)
 
-
-if __name__ == "__main__":
-    app = MLXApp(20, 20, "PAC-MAN")
-    maze = Maze(app.mlx, app.mlx_ptr, 42, 20, 20)
+        self.canvas = Sprite.blank(mlx_app.mlx, mlx_app.mlx_ptr, width, height)
+        print(self.maze_generator.maze)
