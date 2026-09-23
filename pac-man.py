@@ -6,8 +6,8 @@ from pacman.maze import Maze
 
 class Game(MLXApp):
     def __init__(self) -> None:
-        super().__init__(500, 500, "PAC-MAN")
-        self.maze = Maze(self, 500, 400, 42)
+        super().__init__(800, 1000, "PAC-MAN")
+        self.maze = Maze(self, 800, 800, 42)
 
     def update(self):
         self.maze.draw()
