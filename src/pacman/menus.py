@@ -100,7 +100,8 @@ class Menu(ABC):
         """
         y_offset = 0
         for btn in self.buttons:
-            btn.draw(self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset)
+            btn.draw(
+                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset)
             y_offset += btn.h + y_pad
         return y + y_offset
 
