@@ -1,3 +1,5 @@
+"""In-game menus, including the main menu and its buttons."""
+
 from abc import ABC, abstractmethod
 from typing import Any, Callable
 
@@ -130,9 +132,7 @@ class MainMenu(Menu):
             app (MLXApp): The MLX application instance.
             width (int): Width of the menu canvas.
             height (int): Height of the menu canvas.
-
         """
-
         super().__init__(app, width, height)
         self.logo: Sprite = app.asset_manager.get_sprite("logo")
         self.stars: np.ndarray = np.random.randint(
@@ -213,11 +213,11 @@ class MainMenu(Menu):
 
 
 class Button:
-    """Button that can be focused/unfocused and triggers a callback when
-    focused and pressed using KEY_ENTER.
+    """Button that can be focused/unfocused and triggers a callback.
 
-    It builds the button's states (focused/unfocused) from the given title
-    and callback.
+    The callback is triggered when the button is focused and pressed
+    using KEY_ENTER. It builds the button's states (focused/unfocused)
+    from the given title and callback.
 
     Attributes:
         w (int): Width of the button.
@@ -237,8 +237,7 @@ class Button:
         am: AssetManager,
         focused: bool = False,
     ) -> None:
-        """Initialize the button with the given title, callback, and asset
-        manager.
+        """Initialize the button with a title, callback, and asset manager.
 
         Args:
             title (str): Text to display on the button.
@@ -295,8 +294,7 @@ class Button:
         )
 
     def draw(self, target: Sprite, x: int, y: int) -> None:
-        """Draw the current state of the button on the target sprite at the
-        given position.
+        """Draw the button's current state on the target sprite.
 
         Args:
             target (Sprite): Target sprite to draw on.
