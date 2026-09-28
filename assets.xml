@@ -17,20 +17,6 @@
         <sprite id="btn_unfocused_start" path="interface/btn-unfocused-bg-start.png"/>
         <sprite id="btn_unfocused_mid" path="interface/btn-unfocused-bg-mid.png"/>
         <sprite id="btn_unfocused_end" path="interface/btn-unfocused-bg-end.png"/>
-        <sprite id="up_arrow_normal" path="interface/up_arrow_normal.png"/>
-        <sprite id="up_arrow_pressed" path="interface/up_arrow_pressed.png"/>
-        <sprite id="down_arrow_normal" path="interface/down_arrow_normal.png"/>
-        <sprite id="down_arrow_pressed" path="interface/down_arrow_pressed.png"/>
-        <!-- <sprite id="plate-inner" path="interface/plate-inner.png"/>
-        <sprite id="plate-outer" path="interface/plate-outer.png"/>
-        <sprite id="plate-left" path="interface/plate-left.png"/>
-        <sprite id="plate-right" path="interface/plate-right.png"/>
-        <sprite id="plate-top" path="interface/plate-top.png"/>
-        <sprite id="plate-bottom" path="interface/plate-bottom.png"/>
-        <sprite id="plate-corner1" path="interface/plate-corner1.png"/>
-        <sprite id="plate-corner2" path="interface/plate-corner2.png"/>
-        <sprite id="plate-corner3" path="interface/plate-corner3.png"/>
-        <sprite id="plate-corner4" path="interface/plate-corner4.png"/> -->
 
         <!-- maze -->
         <sprite id="pacgum" path="maze/pacgum.png"/>
