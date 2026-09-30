@@ -4,13 +4,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable
 
 import numpy as np
-from mlx_wrapper import AssetManager, MLXApp, Sprite
-
-KEY_LEFT = 0xFF51
-KEY_UP = 0xFF52
-KEY_RIGHT = 0xFF53
-KEY_DOWN = 0xFF54
-KEY_ENTER = 0xFF0D
+from mlx_wrapper import (
+    KEY_DOWN,
+    KEY_ENTER,
+    KEY_UP,
+    AssetManager,
+    MLXApp,
+    Sprite,
+)
 
 
 class Menu(ABC):
@@ -32,12 +33,12 @@ class Menu(ABC):
             width (int): Width of the menu canvas.
             height (int): Height of the menu canvas.
         """
-        self.app: MLXApp = app
-        self.canvas: Sprite = Sprite.blank(width, height)
+        self.app = app
+        self.canvas = Sprite.blank(width, height)
         self.buttons: list[Button] = []
-        self.current_btn: int = -1
+        self.current_btn = -1
         # Whether the menu is currently active.
-        self._is_active: bool = False
+        self._is_active = False
 
     def mount(self) -> None:
         """Mount the menu, making it active and visible."""
@@ -103,7 +104,8 @@ class Menu(ABC):
         y_offset = 0
         for btn in self.buttons:
             btn.draw(
-                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset)
+                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset
+            )
             y_offset += btn.h + y_pad
         return y + y_offset
 
@@ -134,8 +136,8 @@ class MainMenu(Menu):
             height (int): Height of the menu canvas.
         """
         super().__init__(app, width, height)
-        self.logo: Sprite = app.asset_manager.get_sprite("logo")
-        self.stars: np.ndarray = np.random.randint(
+        self.logo = app.asset_manager.get_sprite("logo")
+        self.stars = np.random.randint(
             low=[0, 0], high=[width, height], size=(300, 2)
         )
         self.add_button("Start", lambda: print("Start pressed"))
@@ -233,7 +235,7 @@ class Button:
     def __init__(
         self,
         title: str,
-        callback: Callable[[], None],
+        callback: Callable[..., None],
         am: AssetManager,
         focused: bool = False,
     ) -> None:
@@ -253,30 +255,26 @@ class Button:
         slice_h = 64
         mid_segments = text_w // slice_w + 1
 
-        self.w: int = (mid_segments + 2) * slice_w
-        self.h: int = slice_h
-        self.states: dict[bool, Sprite] = {
+        self.w = (mid_segments + 2) * slice_w
+        self.h = slice_h
+        self.states = {
             False: Sprite.blank(self.w, slice_h),
             True: Sprite.blank(self.w, slice_h),
         }
         self.callback: Callable[..., None] = callback
-        self.focused: bool = focused
+        self.focused = focused
 
         am.get_sprite("btn_unfocused_start").blit(self.states[False], 0, 0)
         am.get_sprite("btn_focused_start").blit(self.states[True], 0, 0)
         for _ in range(1, mid_segments + 1):
             am.get_sprite("btn_unfocused_mid").blit(
-                self.states[False], _ * slice_w, 0
-            )
+                self.states[False], _ * slice_w, 0)
             am.get_sprite("btn_focused_mid").blit(
-                self.states[True], _ * slice_w, 0
-            )
+                self.states[True], _ * slice_w, 0)
         am.get_sprite("btn_unfocused_end").blit(
-            self.states[False], self.w - slice_w, 0
-        )
+            self.states[False], self.w - slice_w, 0)
         am.get_sprite("btn_focused_end").blit(
-            self.states[True], self.w - slice_w, 0
-        )
+            self.states[True], self.w - slice_w, 0)
 
         font.draw_text(
             self.states[False],

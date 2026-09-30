@@ -53,6 +53,7 @@ class Maze:
         self.mlx_app = mlx_app
         self.width = width
         self.height = height
+        self.y_offset = (self.mlx_app.height - (self.height * 2 + 1) * 32) // 2
         self.asset_manager = asset_manager
         self.maze_generator = MazeGenerator(size=(width, height))
 
@@ -60,8 +61,9 @@ class Maze:
         self.seeds = [
             random.randint(0, 2**32 - 1) for _ in range(levels_number)
         ]
+        self.canvas: Sprite = self.create_sprite(0)
 
-    def create_sprites(self, level: int) -> Sprite:
+    def create_sprite(self, level: int) -> Sprite:
         """Generate a level's maze and compose it into a single sprite.
 
         Generates the raw maze for the given level using its
@@ -76,28 +78,27 @@ class Maze:
             drawn to the window.
         """
         self.maze_generator.generate(seed=self.seeds[level])
-        maze = self._convert_to_autotiled(self.maze_generator.maze)
+        self.maze = self._convert_to_autotiled(self.maze_generator.maze)
 
-        canvas = Sprite.blank(len(maze[0]) * 32, len(maze) * 32)
+        canvas = Sprite.blank(len(self.maze[0]) * 32, len(self.maze) * 32)
 
-        for y in range(len(maze)):
-            for x in range(len(maze[0])):
-                if maze[y][x] != 0:
+        for y in range(len(self.maze)):
+            for x in range(len(self.maze[0])):
+                if self.maze[y][x] != 0:
                     self.asset_manager.get_sprite(
-                        f"wall{maze[y][x]:02d}"
+                        f"wall{self.maze[y][x]:02d}"
                     ).blit(canvas, x * 32, y * 32)
 
-        return canvas
+        self.canvas = canvas
 
-    def draw(self, canvas: Sprite) -> None:
+    def draw(self, target: Sprite) -> None:
         """Draw the composed maze sprite centered in the window.
 
         Args:
-            canvas: The maze sprite previously returned by
-                :meth:`create_sprites`.
+            target: Target sprite to draw the maze on.
         """
-        y = (self.mlx_app.height - (self.height * 2 + 1) * 32) // 2
-        canvas.draw_to_window(self.mlx_app.win_ptr, 0, y)
+        if self.canvas:
+            self.canvas.blit(target, 0, self.y_offset)
 
     def _convert_to_autotiled(self, maze: list[list[int]]) -> list[list[int]]:
         """Convert a raw wall-bitmask maze into an autotiled grid.
