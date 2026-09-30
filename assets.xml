@@ -47,7 +47,7 @@
         </animated_sprite>
 
         <!-- maze -->
-        <animated_sprite id="spacgum" fps="8">
+        <animated_sprite id="spacgum" fps="10">
             <frame path="maze/spacgum-1.png"/>
             <frame path="maze/spacgum-2.png"/>
             <frame path="maze/spacgum-3.png"/>
@@ -64,7 +64,7 @@
             <frame path="ghosts/frightened-4.png"/>
         </animated_sprite>
 
-        <animated_sprite id="eaten" fps="8">
+        <animated_sprite id="eaten" fps="10">
             <frame path="ghosts/eaten-1.png"/>
             <frame path="ghosts/eaten-2.png"/>
             <frame path="ghosts/eaten-3.png"/>
@@ -177,38 +177,38 @@
         </animated_sprite>
 
         <!-- pac -->
-        <animated_sprite id="pac_up" fps="10">
+        <animated_sprite id="pac_up" fps="8">
             <frame path="pac/up-1.png"/>
             <frame path="pac/up-2.png"/>
             <frame path="pac/up-3.png"/>
             <frame path="pac/up-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_down" fps="10">
+        <animated_sprite id="pac_down" fps="8">
             <frame path="pac/down-1.png"/>
             <frame path="pac/down-2.png"/>
             <frame path="pac/down-3.png"/>
             <frame path="pac/down-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_left" fps="10">
+        <animated_sprite id="pac_left" fps="8">
             <frame path="pac/left-1.png"/>
             <frame path="pac/left-2.png"/>
             <frame path="pac/left-3.png"/>
             <frame path="pac/left-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_right" fps="10">
+        <animated_sprite id="pac_right" fps="8">
             <frame path="pac/right-1.png"/>
             <frame path="pac/right-2.png"/>
             <frame path="pac/right-3.png"/>
             <frame path="pac/right-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_appear" fps="8">
+        <animated_sprite id="pac_appear" fps="10">
             <frame path="pac/appear-1.png"/>
             <frame path="pac/appear-2.png"/>
             <frame path="pac/appear-3.png"/>
             <frame path="pac/appear-4.png"/>
             <frame path="pac/appear-5.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_death" fps="8">
+        <animated_sprite id="pac_death" fps="10">
             <frame path="pac/death-1.png"/>
             <frame path="pac/death-2.png"/>
             <frame path="pac/death-3.png"/>
