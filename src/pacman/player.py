@@ -138,8 +138,7 @@ class Player:
             self.y += self.dy
             remaining_steps -= 1
 
-        if not self.appeared or self.dx == 0 and self.dy == 0:
-            self.animations[self.curr_state].update(self.game.dt)
+        self.animations[self.curr_state].update(self.game.dt)
 
     def move_up(self) -> None:
         """Set the player's next direction to move up."""
