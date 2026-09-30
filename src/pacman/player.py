@@ -67,8 +67,6 @@ class Player:
         game.bind_key(KEY_LEFT, self.move_left)
         game.bind_key(KEY_RIGHT, self.move_right)
 
-        self.appeared = False
-
     def _is_walkable(self, gx: int, gy: int) -> bool:
         """Whether the given grid position is walkable.
 
