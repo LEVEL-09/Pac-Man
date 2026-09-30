@@ -43,8 +43,7 @@ class Player:
             maze_height - (maze_height % 2 == 0),
         )
         self.x = self.curr_cell[0] * 32
-        self.y = self.curr_cell[1] * 32
-        self.y_offset = y_offset
+        self.y = self.curr_cell[1] * 32 +  y_offset
         self.speed = 5
         self.dx = 0
         self.dy = 0
