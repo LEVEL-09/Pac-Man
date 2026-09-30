@@ -109,6 +109,9 @@ class Player:
         current direction by one pixel per update to ensure smooth movement and
         no jitter.
         """
+        if not self.animations['appear'].is_finished:
+            self.animations[self.curr_state].update(self.game.dt)
+            return
         if (self.dx != 0 and self.next_dx == -self.dx) or (
             self.dy != 0 and self.next_dy == -self.dy
         ):
