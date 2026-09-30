@@ -17,20 +17,6 @@
         <sprite id="btn_unfocused_start" path="interface/btn-unfocused-bg-start.png"/>
         <sprite id="btn_unfocused_mid" path="interface/btn-unfocused-bg-mid.png"/>
         <sprite id="btn_unfocused_end" path="interface/btn-unfocused-bg-end.png"/>
-        <sprite id="up_arrow_normal" path="interface/up_arrow_normal.png"/>
-        <sprite id="up_arrow_pressed" path="interface/up_arrow_pressed.png"/>
-        <sprite id="down_arrow_normal" path="interface/down_arrow_normal.png"/>
-        <sprite id="down_arrow_pressed" path="interface/down_arrow_pressed.png"/>
-        <!-- <sprite id="plate-inner" path="interface/plate-inner.png"/>
-        <sprite id="plate-outer" path="interface/plate-outer.png"/>
-        <sprite id="plate-left" path="interface/plate-left.png"/>
-        <sprite id="plate-right" path="interface/plate-right.png"/>
-        <sprite id="plate-top" path="interface/plate-top.png"/>
-        <sprite id="plate-bottom" path="interface/plate-bottom.png"/>
-        <sprite id="plate-corner1" path="interface/plate-corner1.png"/>
-        <sprite id="plate-corner2" path="interface/plate-corner2.png"/>
-        <sprite id="plate-corner3" path="interface/plate-corner3.png"/>
-        <sprite id="plate-corner4" path="interface/plate-corner4.png"/> -->
 
         <!-- maze -->
         <sprite id="pacgum" path="maze/pacgum.png"/>
@@ -53,7 +39,7 @@
 
     <animated_sprites>
         <!-- interface -->
-        <animated_sprite id="heart" fps="8">
+        <animated_sprite id="heart" fps="8" loop_mode="ping_pong">
             <frame path="interface/heart-1.png"/>
             <frame path="interface/heart-2.png"/>
             <frame path="interface/heart-3.png"/>
@@ -61,7 +47,7 @@
         </animated_sprite>
 
         <!-- maze -->
-        <animated_sprite id="spacgum" fps="8">
+        <animated_sprite id="spacgum" fps="10" loop_mode="ping_pong">
             <frame path="maze/spacgum-1.png"/>
             <frame path="maze/spacgum-2.png"/>
             <frame path="maze/spacgum-3.png"/>
@@ -71,14 +57,14 @@
         </animated_sprite>
 
         <!-- ghosts: shared states -->
-        <animated_sprite id="frightened" fps="8">
+        <animated_sprite id="frightened" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/frightened-1.png"/>
             <frame path="ghosts/frightened-2.png"/>
             <frame path="ghosts/frightened-3.png"/>
             <frame path="ghosts/frightened-4.png"/>
         </animated_sprite>
 
-        <animated_sprite id="eaten" fps="8">
+        <animated_sprite id="eaten" fps="10" loop_mode="ping_pong">
             <frame path="ghosts/eaten-1.png"/>
             <frame path="ghosts/eaten-2.png"/>
             <frame path="ghosts/eaten-3.png"/>
@@ -87,25 +73,25 @@
         </animated_sprite>
 
         <!-- blinky -->
-        <animated_sprite id="blinky_up" fps="8">
+        <animated_sprite id="blinky_up" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/blinky-u-1.png"/>
             <frame path="ghosts/blinky-u-2.png"/>
             <frame path="ghosts/blinky-u-3.png"/>
             <frame path="ghosts/blinky-u-4.png"/>
         </animated_sprite>
-        <animated_sprite id="blinky_down" fps="8">
+        <animated_sprite id="blinky_down" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/blinky-d-1.png"/>
             <frame path="ghosts/blinky-d-2.png"/>
             <frame path="ghosts/blinky-d-3.png"/>
             <frame path="ghosts/blinky-d-4.png"/>
         </animated_sprite>
-        <animated_sprite id="blinky_left" fps="8">
+        <animated_sprite id="blinky_left" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/blinky-l-1.png"/>
             <frame path="ghosts/blinky-l-2.png"/>
             <frame path="ghosts/blinky-l-3.png"/>
             <frame path="ghosts/blinky-l-4.png"/>
         </animated_sprite>
-        <animated_sprite id="blinky_right" fps="8">
+        <animated_sprite id="blinky_right" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/blinky-r-1.png"/>
             <frame path="ghosts/blinky-r-2.png"/>
             <frame path="ghosts/blinky-r-3.png"/>
@@ -113,25 +99,25 @@
         </animated_sprite>
 
         <!-- pinky -->
-        <animated_sprite id="pinky_up" fps="8">
+        <animated_sprite id="pinky_up" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/pinky-u-1.png"/>
             <frame path="ghosts/pinky-u-2.png"/>
             <frame path="ghosts/pinky-u-3.png"/>
             <frame path="ghosts/pinky-u-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pinky_down" fps="8">
+        <animated_sprite id="pinky_down" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/pinky-d-1.png"/>
             <frame path="ghosts/pinky-d-2.png"/>
             <frame path="ghosts/pinky-d-3.png"/>
             <frame path="ghosts/pinky-d-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pinky_left" fps="8">
+        <animated_sprite id="pinky_left" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/pinky-l-1.png"/>
             <frame path="ghosts/pinky-l-2.png"/>
             <frame path="ghosts/pinky-l-3.png"/>
             <frame path="ghosts/pinky-l-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pinky_right" fps="8">
+        <animated_sprite id="pinky_right" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/pinky-r-1.png"/>
             <frame path="ghosts/pinky-r-2.png"/>
             <frame path="ghosts/pinky-r-3.png"/>
@@ -139,25 +125,25 @@
         </animated_sprite>
 
         <!-- inky -->
-        <animated_sprite id="inky_up" fps="8">
+        <animated_sprite id="inky_up" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/inky-u-1.png"/>
             <frame path="ghosts/inky-u-2.png"/>
             <frame path="ghosts/inky-u-3.png"/>
             <frame path="ghosts/inky-u-4.png"/>
         </animated_sprite>
-        <animated_sprite id="inky_down" fps="8">
+        <animated_sprite id="inky_down" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/inky-d-1.png"/>
             <frame path="ghosts/inky-d-2.png"/>
             <frame path="ghosts/inky-d-3.png"/>
             <frame path="ghosts/inky-d-4.png"/>
         </animated_sprite>
-        <animated_sprite id="inky_left" fps="8">
+        <animated_sprite id="inky_left" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/inky-l-1.png"/>
             <frame path="ghosts/inky-l-2.png"/>
             <frame path="ghosts/inky-l-3.png"/>
             <frame path="ghosts/inky-l-4.png"/>
         </animated_sprite>
-        <animated_sprite id="inky_right" fps="8">
+        <animated_sprite id="inky_right" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/inky-r-1.png"/>
             <frame path="ghosts/inky-r-2.png"/>
             <frame path="ghosts/inky-r-3.png"/>
@@ -165,25 +151,25 @@
         </animated_sprite>
 
         <!-- clyde -->
-        <animated_sprite id="clyde_up" fps="8">
+        <animated_sprite id="clyde_up" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/clyde-u-1.png"/>
             <frame path="ghosts/clyde-u-2.png"/>
             <frame path="ghosts/clyde-u-3.png"/>
             <frame path="ghosts/clyde-u-4.png"/>
         </animated_sprite>
-        <animated_sprite id="clyde_down" fps="8">
+        <animated_sprite id="clyde_down" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/clyde-d-1.png"/>
             <frame path="ghosts/clyde-d-2.png"/>
             <frame path="ghosts/clyde-d-3.png"/>
             <frame path="ghosts/clyde-d-4.png"/>
         </animated_sprite>
-        <animated_sprite id="clyde_left" fps="8">
+        <animated_sprite id="clyde_left" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/clyde-l-1.png"/>
             <frame path="ghosts/clyde-l-2.png"/>
             <frame path="ghosts/clyde-l-3.png"/>
             <frame path="ghosts/clyde-l-4.png"/>
         </animated_sprite>
-        <animated_sprite id="clyde_right" fps="8">
+        <animated_sprite id="clyde_right" fps="8" loop_mode="ping_pong">
             <frame path="ghosts/clyde-r-1.png"/>
             <frame path="ghosts/clyde-r-2.png"/>
             <frame path="ghosts/clyde-r-3.png"/>
@@ -191,38 +177,38 @@
         </animated_sprite>
 
         <!-- pac -->
-        <animated_sprite id="pac_up" fps="10">
+        <animated_sprite id="pac_up" fps="8" loop_mode="ping_pong">
             <frame path="pac/up-1.png"/>
             <frame path="pac/up-2.png"/>
             <frame path="pac/up-3.png"/>
             <frame path="pac/up-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_down" fps="10">
+        <animated_sprite id="pac_down" fps="8" loop_mode="ping_pong">
             <frame path="pac/down-1.png"/>
             <frame path="pac/down-2.png"/>
             <frame path="pac/down-3.png"/>
             <frame path="pac/down-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_left" fps="10">
+        <animated_sprite id="pac_left" fps="8" loop_mode="ping_pong">
             <frame path="pac/left-1.png"/>
             <frame path="pac/left-2.png"/>
             <frame path="pac/left-3.png"/>
             <frame path="pac/left-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_right" fps="10">
+        <animated_sprite id="pac_right" fps="8" loop_mode="ping_pong">
             <frame path="pac/right-1.png"/>
             <frame path="pac/right-2.png"/>
             <frame path="pac/right-3.png"/>
             <frame path="pac/right-4.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_appear" fps="8">
+        <animated_sprite id="pac_appear" fps="10" loop_mode="once">
             <frame path="pac/appear-1.png"/>
             <frame path="pac/appear-2.png"/>
             <frame path="pac/appear-3.png"/>
             <frame path="pac/appear-4.png"/>
             <frame path="pac/appear-5.png"/>
         </animated_sprite>
-        <animated_sprite id="pac_death" fps="8">
+        <animated_sprite id="pac_death" fps="10" loop_mode="once">
             <frame path="pac/death-1.png"/>
             <frame path="pac/death-2.png"/>
             <frame path="pac/death-3.png"/>
