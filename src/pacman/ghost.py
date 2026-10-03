@@ -109,10 +109,12 @@ class Ghost(ABC, MovingEntity):
         visited: set = set(self.curr_cell)
 
         if self.dx != 0 or self.dy != 0:
-            visited.add((
-                self.curr_cell[0] - self.dx,
-                self.curr_cell[1] - self.dy,
-            ))
+            visited.add(
+                (
+                    self.curr_cell[0] - self.dx,
+                    self.curr_cell[1] - self.dy,
+                )
+            )
 
         directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
         q = deque([(self.curr_cell, [self.curr_cell])])
@@ -139,7 +141,7 @@ class Ghost(ABC, MovingEntity):
         Args:
             target (tuple[int, int]): New target cell.
         """
-        self.target = target
+        self.target_cell = target
 
     def visualize_path(self) -> None:
         """Draw the ghost's current path onto the maze for debugging.
@@ -212,4 +214,47 @@ class Ghost(ABC, MovingEntity):
         elif self.state == GhostState.EATEN:
             self.eaten_mode()
 
+        self.find_path()
         super().move()
+
+
+class Pinky(Ghost):
+    def __init__(
+        self,
+        game: MLXApp,
+        corner: tuple[int, int],
+        speed: int,
+        path_color: int,
+    ) -> None:
+        super().__init__(game, corner, speed, path_color)
+        self.curr_state = "down"
+        self._add_animation('up', game.am.get_animated_sprite('pinky_up'))
+        self._add_animation('down', game.am.get_animated_sprite('pinky_down'))
+        self._add_animation('left', game.am.get_animated_sprite('pinky_left'))
+        self._add_animation('right', game.am.get_animated_sprite('pinky_right'))
+        self.animations[self.curr_state].play()
+        self.arrows = {
+            'up': game.am.get_sprite('pinky_arrow_up'),
+            'down': game.am.get_sprite('pinky_arrow_down'),
+            'left': game.am.get_sprite('pinky_arrow_left'),
+            'right': game.am.get_sprite('pinky_arrow_right'),
+        }
+        self.arrow = self.arrows[self.curr_state]
+        for arrow in self.arrows.values():
+            arrow.pixels[:] &= 0x80FFFFFF
+
+    def chase_mode(self) -> None:
+        x = self.game.pacman.curr_cell[0]
+        y = self.game.pacman.curr_cell[1]
+        self.set_target((x, y))
+
+    def visualize_path(self) -> None:
+        super().visualize_path()
+        if self.game.pacman.curr_state == "appear" or self.game.pacman.curr_state == "up":
+            self.arrows["up"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32, self.target_cell[1] * 32 - 32)
+        elif self.game.pacman.curr_state == "down":
+            self.arrows["down"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32, self.target_cell[1] * 32 + 96)
+        elif self.game.pacman.curr_state == "left":
+            self.arrows["left"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32 - 100, self.target_cell[1] * 32 + 75)
+        elif self.game.pacman.curr_state == "right":
+            self.arrows["right"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32, self.target_cell[1] * 32 + 75)
