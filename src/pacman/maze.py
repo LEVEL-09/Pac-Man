@@ -1,7 +1,7 @@
 """Maze generation, autotiling, and rendering for the Pac-Man game.
 
-This module exposes the :class:`Maze` class, which wraps a
-:class:`~mazegenerator.MazeGenerator` to procedurally generate a maze
+This module exposes the `Maze` class, which wraps a
+`~mazegenerator.MazeGenerator` to procedurally generate a maze
 per level, converts the generated maze into an autotiled wall layout,
 and renders it to the game window as a single composed sprite.
 """
