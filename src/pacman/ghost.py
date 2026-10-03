@@ -230,6 +230,7 @@ class Ghost(ABC, MovingEntity):
 
 class Blinky(Ghost):
     """Blinky ghost implementation."""
+
     def __init__(self, game: MLXApp) -> None:
         """Initialize Blinky with the given game instance.
 
@@ -241,7 +242,9 @@ class Blinky(Ghost):
         self._add_animation('up', game.am.get_animated_sprite('blinky_up'))
         self._add_animation('down', game.am.get_animated_sprite('blinky_down'))
         self._add_animation('left', game.am.get_animated_sprite('blinky_left'))
-        self._add_animation('right', game.am.get_animated_sprite('blinky_right'))
+        self._add_animation(
+            'right', game.am.get_animated_sprite('blinky_right')
+        )
         self.animations['left'].play()
 
     def chase_mode(self) -> None:
