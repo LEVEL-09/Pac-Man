@@ -27,6 +27,7 @@ class MovingEntity:
         curr_state (str): current state of the entity.
         animations (dict[str, AnimatedSprite]): Animations of the entity.
     """
+
     CELL_SIZE = 32
 
     def __init__(
@@ -95,7 +96,7 @@ class MovingEntity:
             self.animations[self.curr_state].play()
 
     def at_tile_center(self) -> None:
-        """Hook for when the entity reaches the center of a tile."""
+        """Override to handle when the entity reaches the center of a tile."""
 
     def move(self) -> None:
         """Move the entity's position and state.

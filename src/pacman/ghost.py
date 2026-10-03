@@ -1,3 +1,5 @@
+"""Module containing the Ghosts classes and its states."""
+
 from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum, auto
@@ -9,6 +11,15 @@ from pacman.hitbox import Hitbox
 
 
 class GhostState(Enum):
+    """Possible behavioral states of a ghost.
+
+    Attributes:
+        SCATTER: Ghost retreats to and roams around its home corner.
+        CHASE: Ghost actively pursues its target cell (Pac-Man).
+        FRIGHTENED: Ghost flees and can be eaten by Pac-Man.
+        EATEN: Ghost has been eaten and returns to its respawn point.
+    """
+
     SCATTER = auto()
     CHASE = auto()
     FRIGHTENED = auto()
@@ -16,6 +27,23 @@ class GhostState(Enum):
 
 
 class Ghost(ABC, MovingEntity):
+    """Abstract base class for all ghosts in the game.
+
+    Handles pathfinding (BFS), state management, and path visualization
+    shared by all ghost types. Subclasses must implement `chase_mode` to
+    define how the ghost selects its target cell while chasing.
+
+    Attributes:
+        hitbox (Hitbox): Collision hitbox of the ghost.
+        state (GhostState): Current behavioral state of the ghost.
+        target_cell (tuple[int, int]): Grid cell the ghost is pathing towards.
+        path (list[tuple[int, int]]): Sequence of cells from the ghost's
+            current position to its target cell.
+        path_color (int): Color used when visualizing the ghost's path.
+        drawable_path (Sprite): Blank sprite used to draw the visualized
+            path onto.
+    """
+
     def __init__(
         self,
         game: MLXApp,
@@ -23,6 +51,15 @@ class Ghost(ABC, MovingEntity):
         speed: int,
         path_color: int,
     ) -> None:
+        """Initialize the ghost.
+
+        Args:
+            game (MLXApp): Game instance.
+            corner (tuple[int, int]): Starting cell position of the ghost,
+                typically its home corner.
+            speed (int): Speed of the ghost.
+            path_color (int): Color used when visualizing the ghost's path.
+        """
         super().__init__(game, corner, speed)
         self.hitbox = Hitbox(3, 4, 24, 24)
         self.state = GhostState.CHASE
@@ -34,6 +71,13 @@ class Ghost(ABC, MovingEntity):
         )
 
     def at_tile_center(self) -> None:
+        """Advance the ghost along its path when it reaches a tile center.
+
+        Pops the current cell off the path if reached, then sets the next
+        direction towards the upcoming cell in the path. If the path is
+        no longer valid (e.g. the next tile isn't adjacent), recomputes it
+        via `find_path`.
+        """
         if self.path and self.path[0] == self.curr_cell:
             self.path.pop(0)
 
@@ -54,6 +98,14 @@ class Ghost(ABC, MovingEntity):
             self.next_dy = raw_dy
 
     def find_path(self) -> None:
+        """Compute the shortest path to `target_cell` using BFS.
+
+        Walks the maze grid breadth-first from the ghost's current cell,
+        avoiding walls and the cell directly behind the ghost (to prevent
+        immediate reversal), and stores the resulting path (excluding the
+        starting cell) in `self.path`. If no path is found, `self.path` is
+        left unchanged.
+        """
         visited: set = set(self.curr_cell)
 
         if self.dx != 0 or self.dy != 0:
@@ -82,9 +134,20 @@ class Ghost(ABC, MovingEntity):
                     q.append(((next_x, next_y), path + [(next_x, next_y)]))
 
     def set_target(self, target: tuple[int, int]) -> None:
+        """Set the ghost's target.
+
+        Args:
+            target (tuple[int, int]): New target cell.
+        """
         self.target = target
 
     def visualize_path(self) -> None:
+        """Draw the ghost's current path onto the maze for debugging.
+
+        Renders a line segment between each pair of consecutive cells in
+        `self.path` using `path_color`, then draws the result to the game
+        window. Does nothing if the path has fewer than two cells.
+        """
         self.drawable_path.fill(0)
 
         if len(self.path) < 2:
@@ -117,19 +180,29 @@ class Ghost(ABC, MovingEntity):
         )
 
     def scatter_mode(self) -> None:
-        pass
+        """Handle behavior while in `GhostState.SCATTER`."""
 
     @abstractmethod
     def chase_mode(self) -> None:
-        pass
+        """Handle behavior while in `GhostState.CHASE`.
+
+        Must be implemented by subclasses to set `target_cell` (and
+        typically call `find_path`) according to the ghost's unique
+        chasing behavior.
+        """
 
     def frightened_mode(self) -> None:
-        pass
+        """Handle behavior while in `GhostState.FRIGHTENED`."""
 
     def eaten_mode(self) -> None:
-        pass
+        """Handle behavior while in `GhostState.EATEN`."""
 
     def update(self) -> None:
+        """Update the ghost for the current frame.
+
+        Dispatches to the handler matching the ghost's current `state`,
+        then moves the ghost along its current direction.
+        """
         if self.state == GhostState.CHASE:
             self.chase_mode()
         elif self.state == GhostState.SCATTER:
