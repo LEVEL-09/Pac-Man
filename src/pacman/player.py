@@ -2,6 +2,8 @@
 
 from mlx_wrapper import KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, MLXApp
 
+from pacman.hitbox import Hitbox
+
 from .base import MovingEntity
 
 
@@ -13,6 +15,7 @@ class Player(MovingEntity):
         maze_grid (list[list[int]]): maze grid.
         gw (int): width of the maze.
         gh (int): height of the maze.
+        hitbox (Hitbox): hitbox of the player.
         curr_cell (tuple[int, int]): current cell the player is in.
         x (int): x-coordinate of the player.
         y (int): y-coordinate of the player.
@@ -39,6 +42,7 @@ class Player(MovingEntity):
             (gh // 2) - ((gh // 2) % 2 == 0),
         )
         super().__init__(game, start_cell, 5)
+        self.hitbox = Hitbox(3, 4, 24, 24)
 
         self.curr_state = "appear"
         self.animations = {
@@ -62,7 +66,7 @@ class Player(MovingEntity):
             self.animations[self.curr_state].update(self.game.dt)
             return
 
-        super().update()
+        super().move()
 
     def move_up(self) -> None:
         """Set the player's next direction to move up."""
@@ -79,4 +83,3 @@ class Player(MovingEntity):
     def move_right(self) -> None:
         """Set the player's next direction to move right."""
         self.next_dx, self.next_dy = 1, 0
-

@@ -2,7 +2,8 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from mlx_wrapper import AnimatedSprite, AssetManager, MLXApp, Sprite
 
@@ -96,8 +97,8 @@ class MovingEntity:
     def at_tile_center(self) -> None:
         """Hook for when the entity reaches the center of a tile."""
 
-    def update(self) -> None:
-        """Update the entity's position and state.
+    def move(self) -> None:
+        """Move the entity's position and state.
 
         Based on the current direction and speed, it moves the entity along the
         current direction by one pixel per update to ensure smooth movement and
