@@ -24,7 +24,7 @@ class Player:
         animations (dict[str, AnimatedSprite]): animations of the player.
     """
 
-    def __init__(self, game: MLXApp, y_offset: int) -> None:
+    def __init__(self, game: MLXApp) -> None:
         """Initialize the player character.
 
         Args:
@@ -44,7 +44,6 @@ class Player:
         )
         self.x = self.curr_cell[0] * 32
         self.y = self.curr_cell[1] * 32
-        self.y_offset = y_offset
         self.speed = 5
         self.dx = 0
         self.dy = 0
@@ -157,5 +156,5 @@ class Player:
     def draw(self) -> None:
         """Draw the player character to the window."""
         self.animations[self.curr_state].draw_to_window(
-            self.game.win_ptr, self.x, self.y + self.y_offset
+            self.game.win_ptr, self.x, self.y + self.game.maze.y_offset
         )
