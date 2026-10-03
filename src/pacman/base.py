@@ -13,7 +13,6 @@ class MovingEntity:
 
     Attributes:
         game (MLXApp): Game instance.
-        maze_grid (list[list[int]]): Maze grid.
         gw (int): width of the maze grid.
         gh (int): height of the maze grid.
         curr_cell (tuple[int, int]): current cell position.
@@ -41,9 +40,8 @@ class MovingEntity:
             speed (int): Speed of the entity.
         """
         self.game = game
-        self.maze_grid = game.maze.maze
-        self.gw = len(self.maze_grid[0]) - 1
-        self.gh = len(self.maze_grid) - 1
+        self.gw = len(game.maze.grid[0]) - 1
+        self.gh = len(game.maze.grid) - 1
         self.curr_cell = start_cell
 
         self.x = self.curr_cell[0] * 32
@@ -70,7 +68,7 @@ class MovingEntity:
         """
         if gx < 0 or gx >= self.gw or gy < 0 or gy >= self.gh:
             return False
-        return bool(self.maze_grid[gy][gx] == 0)
+        return bool(self.game.maze.grid[gy][gx] == 0)
 
     def _update_direction(self, new_dx: int, new_dy: int) -> None:
         """Update the entity's direction and state based on the new direction.

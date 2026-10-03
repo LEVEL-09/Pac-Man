@@ -61,9 +61,10 @@ class Maze:
         self.seeds = [
             random.randint(0, 2**32 - 1) for _ in range(levels_number)
         ]
-        self.canvas: Sprite = self.create_sprite(0)
+        self.canvas: Sprite
+        self.create_sprite(0)
 
-    def create_sprite(self, level: int) -> Sprite:
+    def create_sprite(self, level: int) -> None:
         """Generate a level's maze and compose it into a single sprite.
 
         Generates the raw maze for the given level using its
@@ -78,15 +79,15 @@ class Maze:
             drawn to the window.
         """
         self.maze_generator.generate(seed=self.seeds[level])
-        self.maze = self._convert_to_autotiled(self.maze_generator.maze)
+        self.grid = self._convert_to_autotiled(self.maze_generator.maze)
 
-        canvas = Sprite.blank(len(self.maze[0]) * 32, len(self.maze) * 32)
+        canvas = Sprite.blank(len(self.grid[0]) * 32, len(self.grid) * 32)
 
-        for y in range(len(self.maze)):
-            for x in range(len(self.maze[0])):
-                if self.maze[y][x] != 0:
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[0])):
+                if self.grid[y][x] != 0:
                     self.asset_manager.get_sprite(
-                        f"wall{self.maze[y][x]:02d}"
+                        f"wall{self.grid[y][x]:02d}"
                     ).blit(canvas, x * 32, y * 32)
 
         self.canvas = canvas
