@@ -1,9 +1,11 @@
 """Entry point script for launching the Pac-Man game."""
 
+from mlx_wrapper import AssetManager, MLXApp, Sprite
+
 from pacman.ghost import Pinky
 from pacman.maze import Maze
-from mlx_wrapper import AssetManager, MLXApp, Sprite
 from pacman.player import Player
+
 
 class Game(MLXApp):
     def __init__(self, width: int, height: int, title: str) -> None:

@@ -231,7 +231,9 @@ class Pinky(Ghost):
         self._add_animation('up', game.am.get_animated_sprite('pinky_up'))
         self._add_animation('down', game.am.get_animated_sprite('pinky_down'))
         self._add_animation('left', game.am.get_animated_sprite('pinky_left'))
-        self._add_animation('right', game.am.get_animated_sprite('pinky_right'))
+        self._add_animation(
+            'right', game.am.get_animated_sprite('pinky_right')
+        )
         self.animations[self.curr_state].play()
         self.arrows = {
             'up': game.am.get_sprite('pinky_arrow_up'),
@@ -250,11 +252,26 @@ class Pinky(Ghost):
 
     def visualize_path(self) -> None:
         super().visualize_path()
-        if self.game.pacman.curr_state == "appear" or self.game.pacman.curr_state == "up":
-            self.arrows["up"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32, self.target_cell[1] * 32 - 32)
+        if (
+            self.game.pacman.curr_state == "appear"
+            or self.game.pacman.curr_state == "up"
+        ):
+            self.arrows["up"].draw_to_window(
+                self.game.win_ptr, self.target_cell[0] * 32,
+                self.target_cell[1] * 32 - 32
+            )
         elif self.game.pacman.curr_state == "down":
-            self.arrows["down"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32, self.target_cell[1] * 32 + 96)
+            self.arrows["down"].draw_to_window(
+                self.game.win_ptr, self.target_cell[0] * 32,
+                self.target_cell[1] * 32 + 96
+            )
         elif self.game.pacman.curr_state == "left":
-            self.arrows["left"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32 - 100, self.target_cell[1] * 32 + 75)
+            self.arrows["left"].draw_to_window(
+                self.game.win_ptr, self.target_cell[0] * 32 - 100,
+                self.target_cell[1] * 32 + 75
+            )
         elif self.game.pacman.curr_state == "right":
-            self.arrows["right"].draw_to_window(self.game.win_ptr, self.target_cell[0] * 32, self.target_cell[1] * 32 + 75)
+            self.arrows["right"].draw_to_window(
+                self.game.win_ptr, self.target_cell[0] * 32,
+                self.target_cell[1] * 32 + 75
+            )
