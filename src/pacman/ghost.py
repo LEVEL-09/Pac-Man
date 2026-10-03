@@ -44,6 +44,8 @@ class Ghost(ABC, MovingEntity):
             path onto.
     """
 
+    DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
+
     def __init__(
         self,
         game: MLXApp,
@@ -108,15 +110,18 @@ class Ghost(ABC, MovingEntity):
         """
         visited: set = set(self.curr_cell)
 
-        if self.dx != 0 or self.dy != 0:
+        walkable_cells = sum([
+            1 for dx, dy in self.DIRECTIONS
+            if self._is_walkable(
+                self.curr_cell[0] + dx, self.curr_cell[1] + dy)
+        ])
+        if (self.dx != 0 or self.dy != 0) and walkable_cells > 1:
             visited.add((
                 self.curr_cell[0] - self.dx,
                 self.curr_cell[1] - self.dy,
             ))
 
-        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
         q = deque([(self.curr_cell, [self.curr_cell])])
-
         while q:
             curr, path = q.popleft()
 
@@ -124,7 +129,7 @@ class Ghost(ABC, MovingEntity):
                 self.path = path[1:]
                 return
 
-            for dx, dy in directions:
+            for dx, dy in self.DIRECTIONS:
                 next_x, next_y = curr[0] + dx, curr[1] + dy
                 if (
                     self._is_walkable(next_x, next_y)
@@ -139,7 +144,7 @@ class Ghost(ABC, MovingEntity):
         Args:
             target (tuple[int, int]): New target cell.
         """
-        self.target = target
+        self.target_cell = target
 
     def visualize_path(self) -> None:
         """Draw the ghost's current path onto the maze for debugging.
@@ -201,7 +206,7 @@ class Ghost(ABC, MovingEntity):
         """Update the ghost for the current frame.
 
         Dispatches to the handler matching the ghost's current `state`,
-        then moves the ghost along its current direction.
+        finds a path to the target cell, and moves the ghost along it.
         """
         if self.state == GhostState.CHASE:
             self.chase_mode()
@@ -212,4 +217,36 @@ class Ghost(ABC, MovingEntity):
         elif self.state == GhostState.EATEN:
             self.eaten_mode()
 
+        self.find_path()
         super().move()
+
+    def draw(self) -> None:
+        """Draw the ghost to the window."""
+        # TODO: Check if path visualization is enabled in cheat mode then
+        # call `visualize_path` before drawing
+        self.visualize_path()
+        super().draw()
+
+
+class Blinky(Ghost):
+    """Blinky ghost implementation."""
+
+    def __init__(self, game: MLXApp) -> None:
+        """Initialize Blinky with the given game instance.
+
+        Args:
+            game: The game instance to associate with this ghost.
+        """
+        super().__init__(game, (len(game.maze.maze[0]) - 2, 1), 4, 0x80FF0000)
+
+        self._add_animation('up', game.am.get_animated_sprite('blinky_up'))
+        self._add_animation('down', game.am.get_animated_sprite('blinky_down'))
+        self._add_animation('left', game.am.get_animated_sprite('blinky_left'))
+        self._add_animation(
+            'right', game.am.get_animated_sprite('blinky_right')
+        )
+        self.animations['left'].play()
+
+    def chase_mode(self) -> None:
+        """Set Blinky's target to Pac-Man's current cell in chase mode."""
+        self.set_target(self.game.pacman.curr_cell)
