@@ -35,6 +35,8 @@
         <sprite id="wall13" path="maze/walls/wall13.png"/>
         <sprite id="wall14" path="maze/walls/wall14.png"/>
         <sprite id="wall15" path="maze/walls/wall15.png"/>
+
+        <sprite id="clyde_circle" path="ghosts/clyde-circle.png"/>
     </sprites>
 
     <animated_sprites>

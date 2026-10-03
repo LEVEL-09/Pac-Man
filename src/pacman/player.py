@@ -35,13 +35,13 @@ class Player(MovingEntity):
         Args:
             game (Game): Game instance.
         """
-        gw = len(game.maze.maze[0]) - 1
-        gh = len(game.maze.maze) - 1
+        gw = len(game.maze.grid[0]) - 1
+        gh = len(game.maze.grid) - 1
         start_cell = (
             (gw // 2) - ((gw // 2) % 2 == 0),
-            (gh // 2) - ((gh // 2) % 2 == 0),
+            (gh // 2) - ((gh // 2) % 2 == 0)
         )
-        super().__init__(game, start_cell, 5)
+        super().__init__(game, start_cell, 4)
         self.hitbox = Hitbox(3, 4, 24, 24)
 
         self.curr_state = "appear"
