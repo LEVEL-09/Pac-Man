@@ -248,9 +248,6 @@ class Pinky(Ghost):
     def __init__(
         self,
         game: MLXApp,
-        corner: tuple[int, int],
-        speed: int,
-        path_color: int,
     ) -> None:
         """Initialize Pinky with the given game instance.
 
@@ -261,7 +258,7 @@ class Pinky(Ghost):
             speed (int): Speed of the ghost.
             path_color (int): Color used when visualizing the ghost's path.
         """
-        super().__init__(game, corner, speed, path_color)
+        super().__init__(game, (1, 1), 3, 0x80FF00FF)
         self.curr_state = "down"
         self._add_animation('up', game.am.get_animated_sprite('pinky_up'))
         self._add_animation('down', game.am.get_animated_sprite('pinky_down'))
@@ -379,7 +376,7 @@ class Clyde(Ghost):
         Args:
             game: The MLXApp instance.
         """
-        super().__init__(game, (1, len(game.maze.grid) - 2), 3, 0xFF00FF00)
+        super().__init__(game, (1, len(game.maze.grid) - 2), 3, 0x8000FF00)
         self.target_cell = self.game.pacman.curr_cell
 
         self.curr_state = 'right'
@@ -413,13 +410,18 @@ class Clyde(Ghost):
         corner, otherwise he will chase the player.
         When the home corner is set, Clyde waits until he exceeds the
         threshold (320px) before going back to chase the player.
+
+        The aggro circle is drawn at half alpha while Clyde is retreating to
+        his corner, and restored to full alpha when he resumes chasing.
         """
         if self.dist() < 320 and self.target_cell == self.corner:
             return
         if self.dist() > 150:
             self.target_cell = self.game.pacman.curr_cell
+            self.circle.pixels[self.circle.pixels > 0] |= 0xFF000000
         else:
             self.target_cell = self.corner
+            self.circle.pixels[self.circle.pixels > 0] &= 0x7FFFFFFF
 
     def visualize_path(self) -> None:
         """Draw the ghost's path and aggro circle to the window."""

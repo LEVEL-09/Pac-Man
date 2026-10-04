@@ -9,7 +9,7 @@ and renders it to the game window as a single composed sprite.
 import random
 
 from mazegenerator import MazeGenerator
-from mlx_wrapper import Sprite
+from mlx_wrapper import MLXApp, Sprite
 
 
 class Maze:
@@ -31,7 +31,7 @@ class Maze:
 
     def __init__(
         self,
-        game: game,
+        game: MLXApp,
         width: int,
         height: int,
         seed: int,
@@ -86,7 +86,7 @@ class Maze:
         self.pacgum_canvas = Sprite.blank(
             len(self.grid[0]) * 32, len(self.grid) * 32
         )
-        self.collectibles: dict[tuple[int, int], int] = {}
+        self.collectibles = {}
 
         for y in range(len(self.grid)):
             for x in range(len(self.grid[0])):
@@ -100,7 +100,12 @@ class Maze:
                         (1, len(self.grid) - 2),
                         (len(self.grid[0]) - 2, len(self.grid) - 2)
                     ]
-                    self.collectibles[(x, y)] = 2 if is_corner else 1
+                    is_reachable = any(
+                        self.grid[y + dy][x + dx] == 0
+                        for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+                    )
+                    if is_reachable:
+                        self.collectibles[(x, y)] = 2 if is_corner else 1
 
     def draw(self, target: Sprite) -> None:
         """Draw the composed maze sprite centered in the window.
@@ -112,10 +117,10 @@ class Maze:
             self.canvas.blit(target, 0, self.y_offset)
 
     def update(self) -> None:
-        self.spacgum_sprite.update(self.game.dt)
-
+        """Update the maze and collectibles state."""
         if not self.collectibles:
             return
+        self.spacgum_sprite.update(self.game.dt)
 
         self.pacgum_canvas.fill(0)
         for (x, y), type in self.collectibles.items():
