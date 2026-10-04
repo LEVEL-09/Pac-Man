@@ -258,18 +258,22 @@ class Pinky(Ghost):
             arrow.pixels[:] &= 0x80FFFFFF
 
     def chase_mode(self) -> None:
-        if self.game.pacman.curr_state == "up":
-            x = self.game.pacman.curr_cell[0]
-            y = self.game.pacman.curr_cell[1] - 3
-        elif self.game.pacman.curr_state == "down":
-            x = self.game.pacman.curr_cell[0]
-            y = self.game.pacman.curr_cell[1] + 3
-        elif self.game.pacman.curr_state == "left":
-            x = self.game.pacman.curr_cell[0] - 3
-            y = self.game.pacman.curr_cell[1]
-        elif self.game.pacman.curr_state == "right":
-            x = self.game.pacman.curr_cell[0] + 3
-            y = self.game.pacman.curr_cell[1]
+        if self.path:
+            if self.game.pacman.curr_state == "up":
+                x = self.game.pacman.curr_cell[0]
+                y = self.game.pacman.curr_cell[1] - 3
+            elif self.game.pacman.curr_state == "down":
+                x = self.game.pacman.curr_cell[0]
+                y = self.game.pacman.curr_cell[1] + 3
+            elif self.game.pacman.curr_state == "left":
+                x = self.game.pacman.curr_cell[0] - 3
+                y = self.game.pacman.curr_cell[1]
+            elif self.game.pacman.curr_state == "right":
+                x = self.game.pacman.curr_cell[0] + 3
+                y = self.game.pacman.curr_cell[1]
+            else:
+                x = self.game.pacman.curr_cell[0]
+                y = self.game.pacman.curr_cell[1]
         else:
             x = self.game.pacman.curr_cell[0]
             y = self.game.pacman.curr_cell[1]
