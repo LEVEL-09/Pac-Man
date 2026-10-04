@@ -1,5 +1,6 @@
 """Module containing the Ghosts classes and its states."""
 
+import math
 from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum, auto
@@ -44,6 +45,8 @@ class Ghost(ABC, MovingEntity):
             path onto.
     """
 
+    DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
+
     def __init__(
         self,
         game: MLXApp,
@@ -63,8 +66,9 @@ class Ghost(ABC, MovingEntity):
         super().__init__(game, corner, speed)
         self.hitbox = Hitbox(3, 4, 24, 24)
         self.state = GhostState.CHASE
-        self.target_cell: tuple[int, int]
-        self.path: list[tuple[int, int]]
+        self.corner = corner
+        self.target_cell: tuple[int, int] = corner
+        self.path: list[tuple[int, int]] = []
         self.path_color = path_color
         self.drawable_path = Sprite.blank(
             game.maze.canvas.width, game.maze.canvas.height
@@ -108,17 +112,18 @@ class Ghost(ABC, MovingEntity):
         """
         visited: set = set(self.curr_cell)
 
-        if self.dx != 0 or self.dy != 0:
-            visited.add(
-                (
-                    self.curr_cell[0] - self.dx,
-                    self.curr_cell[1] - self.dy,
-                )
-            )
+        walkable_cells = sum([
+            1 for dx, dy in self.DIRECTIONS
+            if self._is_walkable(
+                self.curr_cell[0] + dx, self.curr_cell[1] + dy)
+        ])
+        if (self.dx != 0 or self.dy != 0) and walkable_cells > 1:
+            visited.add((
+                self.curr_cell[0] - self.dx,
+                self.curr_cell[1] - self.dy,
+            ))
 
-        directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
         q = deque([(self.curr_cell, [self.curr_cell])])
-
         while q:
             curr, path = q.popleft()
 
@@ -126,7 +131,7 @@ class Ghost(ABC, MovingEntity):
                 self.path = path[1:]
                 return
 
-            for dx, dy in directions:
+            for dx, dy in self.DIRECTIONS:
                 next_x, next_y = curr[0] + dx, curr[1] + dy
                 if (
                     self._is_walkable(next_x, next_y)
@@ -203,7 +208,7 @@ class Ghost(ABC, MovingEntity):
         """Update the ghost for the current frame.
 
         Dispatches to the handler matching the ghost's current `state`,
-        then moves the ghost along its current direction.
+        finds a path to the target cell, and moves the ghost along it.
         """
         if self.state == GhostState.CHASE:
             self.chase_mode()
@@ -216,6 +221,13 @@ class Ghost(ABC, MovingEntity):
 
         self.find_path()
         super().move()
+
+    def draw(self) -> None:
+        """Draw the ghost to the window."""
+        # TODO: Check if path visualization is enabled in cheat mode then
+        # call `visualize_path` before drawing
+        self.visualize_path()
+        super().draw()
 
 
 class Pinky(Ghost):
@@ -288,3 +300,93 @@ class Pinky(Ghost):
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
                 self.game.pacman.curr_cell[1] * 32 + 75
             )
+
+
+class Blinky(Ghost):
+    """Blinky ghost implementation."""
+
+    def __init__(self, game: MLXApp) -> None:
+        """Initialize Blinky with the given game instance.
+
+        Args:
+            game: The game instance to associate with this ghost.
+        """
+        super().__init__(game, (len(game.maze.grid[0]) - 2, 1), 3, 0x80FF0000)
+
+        self._add_animation('up', game.am.get_animated_sprite('blinky_up'))
+        self._add_animation('down', game.am.get_animated_sprite('blinky_down'))
+        self._add_animation('left', game.am.get_animated_sprite('blinky_left'))
+        self._add_animation(
+            'right', game.am.get_animated_sprite('blinky_right')
+        )
+        self.animations['left'].play()
+
+    def chase_mode(self) -> None:
+        """Set Blinky's target to Pac-Man's current cell in chase mode."""
+        self.set_target(self.game.pacman.curr_cell)
+
+
+class Clyde(Ghost):
+    """Clyde ghost implementation.
+
+    Attributes:
+        clyde_circle: green circle sprite used for visualizing Clyde's aggro
+            range.
+    """
+
+    def __init__(self, game: MLXApp) -> None:
+        """Initialize Clyde with the game instance and set initial state.
+
+        Args:
+            game: The MLXApp instance.
+        """
+        super().__init__(game, (1, len(game.maze.grid) - 2), 3, 0xFF00FF00)
+        self.target_cell = self.game.pacman.curr_cell
+
+        self.curr_state = 'right'
+        self._add_animation('up', game.am.get_animated_sprite('clyde_up'))
+        self._add_animation('down', game.am.get_animated_sprite('clyde_down'))
+        self._add_animation('left', game.am.get_animated_sprite('clyde_left'))
+        self._add_animation(
+            'right', game.am.get_animated_sprite('clyde_right'))
+        self.animations['right'].play()
+
+        self.circle = game.am.get_sprite('clyde_circle')
+        self.drawable_path = Sprite.blank(
+            game.maze.canvas.width, game.maze.canvas.height
+        )
+
+    def dist(self) -> float:
+        """Calculate the euclidean distance to the player.
+
+        Returns:
+            float: distance to the player.
+        """
+        pac_x, pac_y = self.game.pacman.x, self.game.pacman.y
+        return math.sqrt(
+            (pac_x - self.x) ** 2 + (pac_y - self.y) ** 2
+        )
+
+    def chase_mode(self) -> None:
+        """Clyde's chase mode behavior.
+
+        When Clyde is within 150px radius of the player he will go to his home
+        corner, otherwise he will chase the player.
+        When the home corner is set, Clyde waits until he exceeds the
+        threshold (320px) before going back to chase the player.
+        """
+        if self.dist() < 320 and self.target_cell == self.corner:
+            return
+        if self.dist() > 150:
+            self.target_cell = self.game.pacman.curr_cell
+        else:
+            self.target_cell = self.corner
+
+    def visualize_path(self) -> None:
+        """Draw the ghost's path and aggro circle to the window."""
+        super().visualize_path()
+        self.circle.draw_to_window(
+            self.game.win_ptr,
+            self.game.pacman.x - 154,
+            self.game.pacman.y - 154 + self.game.maze.y_offset
+        )
