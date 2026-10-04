@@ -60,6 +60,9 @@ class Player(MovingEntity):
         game.bind_key(KEY_LEFT, self.move_left)
         game.bind_key(KEY_RIGHT, self.move_right)
 
+    def at_tile_center(self) -> None:
+        gum_type = self.game.maze.collectibles.pop(self.curr_cell, None)
+
     def update(self) -> None:
         """Update the player's position and state."""
         if not self.animations['appear'].is_finished:

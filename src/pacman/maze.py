@@ -9,7 +9,7 @@ and renders it to the game window as a single composed sprite.
 import random
 
 from mazegenerator import MazeGenerator
-from mlx_wrapper import AssetManager, MLXApp, Sprite
+from mlx_wrapper import Sprite
 
 
 class Maze:
@@ -31,18 +31,16 @@ class Maze:
 
     def __init__(
         self,
-        mlx_app: MLXApp,
+        game: game,
         width: int,
         height: int,
         seed: int,
-        asset_manager: AssetManager,
-        levels_number: int,
+        levels_number: int
     ) -> None:
         """Initialize the maze generator and derive per-level seeds.
 
         Args:
-            mlx_app: The running MLX application/window used for
-                rendering.
+            game: The game instance.
             width: The maze width, in cells.
             height: The maze height, in cells.
             seed: The top-level seed used to deterministically derive
@@ -50,21 +48,28 @@ class Maze:
             asset_manager: Provides access to wall sprites by name.
             levels_number: The number of levels to generate seeds for.
         """
-        self.mlx_app = mlx_app
+        self.game = game
         self.width = width
         self.height = height
-        self.y_offset = (self.mlx_app.height - (self.height * 2 + 1) * 32) // 2
-        self.asset_manager = asset_manager
+        self.y_offset = (game.height - (self.height * 2 + 1) * 32) // 2
         self.maze_generator = MazeGenerator(size=(width, height))
 
         random.seed(seed)
         self.seeds = [
             random.randint(0, 2**32 - 1) for _ in range(levels_number)
         ]
-        self.canvas: Sprite
-        self.create_sprite(0)
 
-    def create_sprite(self, level: int) -> None:
+        self.pacgum_canvas: Sprite
+        self.pacgum_sprite = game.am.get_sprite('pacgum')
+        self.spacgum_sprite = game.am.get_animated_sprite('spacgum')
+        self.spacgum_sprite.play()
+        self.create_maze_sprite(0)
+
+        self.pacgum_canvas = Sprite.blank(
+            len(self.grid[0]) * 32, len(self.grid) * 32)
+        self.collectibles: dict[tuple[int, int], int]
+
+    def create_maze_sprite(self, level: int) -> None:
         """Generate a level's maze and compose it into a single sprite.
 
         Generates the raw maze for the given level using its
@@ -73,24 +78,29 @@ class Maze:
 
         Args:
             level: The zero-based index of the level to generate.
-
-        Returns:
-            A sprite containing the fully composed maze, ready to be
-            drawn to the window.
         """
         self.maze_generator.generate(seed=self.seeds[level])
         self.grid = self._convert_to_autotiled(self.maze_generator.maze)
 
-        canvas = Sprite.blank(len(self.grid[0]) * 32, len(self.grid) * 32)
+        self.canvas = Sprite.blank(len(self.grid[0]) * 32, len(self.grid) * 32)
+        self.pacgum_canvas = Sprite.blank(
+            len(self.grid[0]) * 32, len(self.grid) * 32
+        )
+        self.collectibles: dict[tuple[int, int], int] = {}
 
         for y in range(len(self.grid)):
             for x in range(len(self.grid[0])):
                 if self.grid[y][x] != 0:
-                    self.asset_manager.get_sprite(
+                    self.game.am.get_sprite(
                         f"wall{self.grid[y][x]:02d}"
-                    ).blit(canvas, x * 32, y * 32)
-
-        self.canvas = canvas
+                    ).blit(self.canvas, x * 32, y * 32)
+                else:
+                    is_corner = (x, y) in [
+                        (1, 1), (len(self.grid[0]) - 2, 1),
+                        (1, len(self.grid) - 2),
+                        (len(self.grid[0]) - 2, len(self.grid) - 2)
+                    ]
+                    self.collectibles[(x, y)] = 2 if is_corner else 1
 
     def draw(self, target: Sprite) -> None:
         """Draw the composed maze sprite centered in the window.
@@ -100,6 +110,21 @@ class Maze:
         """
         if self.canvas:
             self.canvas.blit(target, 0, self.y_offset)
+
+    def update(self) -> None:
+        self.spacgum_sprite.update(self.game.dt)
+
+        if not self.collectibles:
+            return
+
+        self.pacgum_canvas.fill(0)
+        for (x, y), type in self.collectibles.items():
+            if type == 1:
+                self.pacgum_sprite.blit(
+                    self.pacgum_canvas, x * 32, y * 32)
+            elif type == 2:
+                self.spacgum_sprite.blit(
+                    self.pacgum_canvas, x * 32, y * 32)
 
     def _convert_to_autotiled(self, maze: list[list[int]]) -> list[list[int]]:
         """Convert a raw wall-bitmask maze into an autotiled grid.
