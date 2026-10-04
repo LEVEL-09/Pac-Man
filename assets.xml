@@ -36,6 +36,12 @@
         <sprite id="wall14" path="maze/walls/wall14.png"/>
         <sprite id="wall15" path="maze/walls/wall15.png"/>
 
+        <!-- paths -->
+        <sprite id="pinky_arrow_up" path="ghosts/pinky_arrow_up.png"/>
+        <sprite id="pinky_arrow_down" path="ghosts/pinky_arrow_down.png"/>
+        <sprite id="pinky_arrow_left" path="ghosts/pinky_arrow_left.png"/>
+        <sprite id="pinky_arrow_right" path="ghosts/pinky_arrow_right.png"/>
+
         <sprite id="clyde_circle" path="ghosts/clyde-circle.png"/>
     </sprites>
 
