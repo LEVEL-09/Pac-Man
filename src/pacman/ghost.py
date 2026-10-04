@@ -246,8 +246,21 @@ class Pinky(Ghost):
             arrow.pixels[:] &= 0x80FFFFFF
 
     def chase_mode(self) -> None:
-        x = self.game.pacman.curr_cell[0]
-        y = self.game.pacman.curr_cell[1]
+        if self.game.pacman.curr_state == "up":
+            x = self.game.pacman.curr_cell[0]
+            y = self.game.pacman.curr_cell[1] - 3
+        elif self.game.pacman.curr_state == "down":
+            x = self.game.pacman.curr_cell[0]
+            y = self.game.pacman.curr_cell[1] + 3
+        elif self.game.pacman.curr_state == "left":
+            x = self.game.pacman.curr_cell[0] - 3
+            y = self.game.pacman.curr_cell[1]
+        elif self.game.pacman.curr_state == "right":
+            x = self.game.pacman.curr_cell[0] + 3
+            y = self.game.pacman.curr_cell[1]
+        else:
+            x = self.game.pacman.curr_cell[0]
+            y = self.game.pacman.curr_cell[1]
         self.set_target((x, y))
 
     def visualize_path(self) -> None:
@@ -257,21 +270,21 @@ class Pinky(Ghost):
             or self.game.pacman.curr_state == "up"
         ):
             self.arrows["up"].draw_to_window(
-                self.game.win_ptr, self.target_cell[0] * 32,
-                self.target_cell[1] * 32 - 32
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
+                self.game.pacman.curr_cell[1] * 32 - 32
             )
         elif self.game.pacman.curr_state == "down":
             self.arrows["down"].draw_to_window(
-                self.game.win_ptr, self.target_cell[0] * 32,
-                self.target_cell[1] * 32 + 96
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
+                self.game.pacman.curr_cell[1] * 32 + 96
             )
         elif self.game.pacman.curr_state == "left":
             self.arrows["left"].draw_to_window(
-                self.game.win_ptr, self.target_cell[0] * 32 - 100,
-                self.target_cell[1] * 32 + 75
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 100,
+                self.game.pacman.curr_cell[1] * 32 + 75
             )
         elif self.game.pacman.curr_state == "right":
             self.arrows["right"].draw_to_window(
-                self.game.win_ptr, self.target_cell[0] * 32,
-                self.target_cell[1] * 32 + 75
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
+                self.game.pacman.curr_cell[1] * 32 + 75
             )
