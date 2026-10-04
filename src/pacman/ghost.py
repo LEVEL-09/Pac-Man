@@ -231,6 +231,20 @@ class Ghost(ABC, MovingEntity):
 
 
 class Pinky(Ghost):
+    """Pinky ghost implementation.
+
+    Pinky's chase behavior is an ambush strategy: instead of targeting
+    Pac-Man's current cell directly, it targets a cell a few tiles ahead
+    of Pac-Man in whichever direction Pac-Man is currently facing.
+
+    Attributes:
+        arrows (dict[str, Sprite]): Sprites for the directional arrow shown
+            at Pinky's target cell, keyed by direction ("up", "down",
+            "left", "right").
+        arrow (Sprite): Arrow sprite currently selected based on Pac-Man's
+            direction.
+    """
+
     def __init__(
         self,
         game: MLXApp,
@@ -238,6 +252,15 @@ class Pinky(Ghost):
         speed: int,
         path_color: int,
     ) -> None:
+        """Initialize Pinky with the given game instance.
+
+        Args:
+            game (MLXApp): Game instance.
+            corner (tuple[int, int]): Starting cell position of the ghost,
+                typically its home corner.
+            speed (int): Speed of the ghost.
+            path_color (int): Color used when visualizing the ghost's path.
+        """
         super().__init__(game, corner, speed, path_color)
         self.curr_state = "down"
         self._add_animation('up', game.am.get_animated_sprite('pinky_up'))
@@ -258,6 +281,12 @@ class Pinky(Ghost):
             arrow.pixels[:] &= 0x80FFFFFF
 
     def chase_mode(self) -> None:
+        """Set Pinky's target to a cell ahead of Pac-Man in chase mode.
+
+        Targets the cell 3 tiles ahead of Pac-Man in the direction Pac-Man
+        is currently facing. Falls back to Pac-Man's current cell if Pinky
+        has no path or Pac-Man's direction is unrecognized.
+        """
         if self.path:
             if self.game.pacman.curr_state == "up":
                 x = self.game.pacman.curr_cell[0]
@@ -280,6 +309,12 @@ class Pinky(Ghost):
         self.set_target((x, y))
 
     def visualize_path(self) -> None:
+        """Draw the ghost's path and a directional arrow to the window.
+
+        Draws the base path visualization, then overlays an arrow sprite
+        pointing in the direction Pac-Man is currently facing, placed near
+        Pinky's ambush target cell.
+        """
         super().visualize_path()
         if (
             self.game.pacman.curr_state == "appear"
