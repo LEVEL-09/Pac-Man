@@ -454,7 +454,12 @@ class Inky(Ghost):
         Args:
             game (MLXApp): Game instance.
         """
-        super().__init__(game, (len(game.maze.grid) - 2, len(game.maze.grid) - 2), 3, 0xA4CFEBFF)
+        super().__init__(
+            game,
+            (len(game.maze.grid) - 2, len(game.maze.grid) - 2),
+            3,
+            0xA4CFEBFF,
+        )
 
         self._add_animation('up', game.am.get_animated_sprite('inky_up'))
         self._add_animation('down', game.am.get_animated_sprite('inky_down'))
