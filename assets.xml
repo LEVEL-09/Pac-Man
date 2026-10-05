@@ -4,7 +4,7 @@
     <fonts>
         <font id="kolostygra" path="fonts/kolostygra.ttf" size="24"/>
         <font id="mally_bold" path="fonts/Mally-Bold.ttf" size="24"/>
-        <font id="minecraft" path="fonts/Minecraft.ttf" size="16"/>
+        <font id="minecraft" path="fonts/Minecraft.otf" size="24"/>
         <font id="sb_vibe" path="fonts/SB Vibe Regular.otf" size="20"/>
     </fonts>
 
