@@ -11,20 +11,7 @@ class Player(MovingEntity):
     """Represents the player character in the game.
 
     Attributes:
-        game (MLXApp): Game instance.
-        maze_grid (list[list[int]]): maze grid.
-        gw (int): width of the maze.
-        gh (int): height of the maze.
         hitbox (Hitbox): hitbox of the player.
-        curr_cell (tuple[int, int]): current cell the player is in.
-        x (int): x-coordinate of the player.
-        y (int): y-coordinate of the player.
-        y_offset (int): y-offset of the player.
-        speed (int): speed of the player.
-        dx (int): x-direction of the player.
-        dy (int): y-direction of the player.
-        next_dx (int): next x-direction of the player.
-        next_dy (int): next y-direction of the player.
         curr_state (str): current state of the player.
         animations (dict[str, AnimatedSprite]): animations of the player.
     """
@@ -45,20 +32,25 @@ class Player(MovingEntity):
         self.hitbox = Hitbox(3, 4, 24, 24)
 
         self.curr_state = "appear"
-        self.animations = {
-            "up": game.am.get_animated_sprite("pac_up"),
-            "down": game.am.get_animated_sprite("pac_down"),
-            "left": game.am.get_animated_sprite("pac_left"),
-            "right": game.am.get_animated_sprite("pac_right"),
-            "death": game.am.get_animated_sprite("pac_death"),
-            "appear": game.am.get_animated_sprite("pac_appear"),
-        }
+        self._add_animation("up", game.am.get_animated_sprite("pac_up"))
+        self._add_animation("down", game.am.get_animated_sprite("pac_down"))
+        self._add_animation("left", game.am.get_animated_sprite("pac_left"))
+        self._add_animation("right", game.am.get_animated_sprite("pac_right"))
+        self._add_animation("death", game.am.get_animated_sprite("pac_death"))
+        self._add_animation(
+            "appear", game.am.get_animated_sprite("pac_appear"))
         self.animations[self.curr_state].play()
 
         game.bind_key(KEY_UP, self.move_up)
         game.bind_key(KEY_DOWN, self.move_down)
         game.bind_key(KEY_LEFT, self.move_left)
         game.bind_key(KEY_RIGHT, self.move_right)
+
+    def at_tile_center(self) -> None:
+        """Handle when the player reaches the center of a tile."""
+        # TODO: Add logic to increase score and notify when all
+        # collectibles are collected
+        self.game.maze.collectibles.pop(self.curr_cell, None)
 
     def update(self) -> None:
         """Update the player's position and state."""
