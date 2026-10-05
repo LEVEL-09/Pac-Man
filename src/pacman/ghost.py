@@ -319,21 +319,21 @@ class Pinky(Ghost):
         ):
             self.arrows["up"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
-                self.game.pacman.curr_cell[1] * 32 - 32
+                self.game.pacman.curr_cell[1] * 32 - 21
             )
         elif self.game.pacman.curr_state == "down":
             self.arrows["down"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
-                self.game.pacman.curr_cell[1] * 32 + 96
+                self.game.pacman.curr_cell[1] * 32 + 90
             )
         elif self.game.pacman.curr_state == "left":
             self.arrows["left"].draw_to_window(
-                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 100,
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 96,
                 self.game.pacman.curr_cell[1] * 32 + 75
             )
         elif self.game.pacman.curr_state == "right":
             self.arrows["right"].draw_to_window(
-                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 + 16,
                 self.game.pacman.curr_cell[1] * 32 + 75
             )
 
