@@ -20,6 +20,7 @@
 
         <!-- maze -->
         <sprite id="pacgum" path="maze/pacgum.png"/>
+        <sprite id="spacgum" path="maze/spacgum.png"/>
         <sprite id="wall01" path="maze/walls/wall01.png"/>
         <sprite id="wall02" path="maze/walls/wall02.png"/>
         <sprite id="wall03" path="maze/walls/wall03.png"/>
@@ -57,16 +58,6 @@
             <frame path="interface/heart-2.png"/>
             <frame path="interface/heart-3.png"/>
             <frame path="interface/heart-4.png"/>
-        </animated_sprite>
-
-        <!-- maze -->
-        <animated_sprite id="spacgum" fps="10" loop_mode="ping_pong">
-            <frame path="maze/spacgum-1.png"/>
-            <frame path="maze/spacgum-2.png"/>
-            <frame path="maze/spacgum-3.png"/>
-            <frame path="maze/spacgum-4.png"/>
-            <frame path="maze/spacgum-5.png"/>
-            <frame path="maze/spacgum-6.png"/>
         </animated_sprite>
 
         <!-- ghosts: shared states -->
