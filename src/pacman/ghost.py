@@ -431,3 +431,106 @@ class Clyde(Ghost):
             self.game.pacman.x - 154,
             self.game.pacman.y - 154 + self.game.maze.y_offset
         )
+
+
+class Inky(Ghost):
+    """Inky ghost implementation.
+
+    Inky's chase behavior is an ambush-from-behind strategy: it targets a
+    cell a couple of tiles behind Pac-Man, on the opposite side of
+    whichever direction Pac-Man is currently facing.
+
+    Attributes:
+        arrows (dict[str, Sprite]): Sprites for the directional arrow shown
+            at Inky's target cell, keyed by direction ("up", "down",
+            "left", "right").
+        arrow (Sprite): Arrow sprite currently selected based on Pac-Man's
+            direction.
+    """
+
+    def __init__(self, game: MLXApp) -> None:
+        """Initialize Inky with the given game instance.
+
+        Args:
+            game (MLXApp): Game instance.
+        """
+        super().__init__(
+            game,
+            (len(game.maze.grid) - 2, len(game.maze.grid) - 2),
+            3,
+            0xA4CFEBFF,
+        )
+
+        self._add_animation('up', game.am.get_animated_sprite('inky_up'))
+        self._add_animation('down', game.am.get_animated_sprite('inky_down'))
+        self._add_animation('left', game.am.get_animated_sprite('inky_left'))
+        self._add_animation(
+            'right', game.am.get_animated_sprite('inky_right')
+        )
+        self.animations['up'].play()
+
+        self.arrows = {
+            'up': game.am.get_sprite('inky_arrow_up'),
+            'down': game.am.get_sprite('inky_arrow_down'),
+            'left': game.am.get_sprite('inky_arrow_left'),
+            'right': game.am.get_sprite('inky_arrow_right'),
+        }
+        self.arrow = self.arrows[self.curr_state]
+        for arrow in self.arrows.values():
+            arrow.pixels[:] &= 0x80FFFFFF
+
+    def chase_mode(self) -> None:
+        """Set Inky's target to a cell behind Pac-Man in chase mode.
+
+        Targets the cell 2 tiles behind Pac-Man, on the opposite side of
+        the direction Pac-Man is currently facing. Falls back to Pac-Man's
+        current cell if Pac-Man's direction is unrecognized.
+        """
+        if self.game.pacman.curr_state == "down":
+            x = self.game.pacman.curr_cell[0]
+            y = self.game.pacman.curr_cell[1] - 2
+        elif self.game.pacman.curr_state == "up":
+            x = self.game.pacman.curr_cell[0]
+            y = self.game.pacman.curr_cell[1] + 2
+        elif self.game.pacman.curr_state == "right":
+            x = self.game.pacman.curr_cell[0] - 2
+            y = self.game.pacman.curr_cell[1]
+        elif self.game.pacman.curr_state == "left":
+            x = self.game.pacman.curr_cell[0] + 2
+            y = self.game.pacman.curr_cell[1]
+        else:
+            x = self.game.pacman.curr_cell[0]
+            y = self.game.pacman.curr_cell[1]
+        self.set_target((x, y))
+
+    def visualize_path(self) -> None:
+        """Draw the ghost's path and a directional arrow to the window.
+
+        Draws the base path visualization, then overlays an arrow sprite
+        pointing opposite to the direction Pac-Man is currently facing,
+        placed near Inky's ambush target cell.
+        """
+        super().visualize_path()
+        if (
+            self.game.pacman.curr_state == "appear"
+            or self.game.pacman.curr_state == "up"
+        ):
+            self.arrows["down"].draw_to_window(
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
+                self.game.pacman.curr_cell[1] * 32 + 91
+            )
+        elif self.game.pacman.curr_state == "down":
+            self.arrows["up"].draw_to_window(
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
+                self.game.pacman.curr_cell[1] * 32 + 16
+            )
+        elif self.game.pacman.curr_state == "left":
+            self.arrows["right"].draw_to_window(
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 + 16,
+                self.game.pacman.curr_cell[1] * 32 + 75
+            )
+        elif self.game.pacman.curr_state == "right":
+            self.arrows["left"].draw_to_window(
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 64,
+                self.game.pacman.curr_cell[1] * 32 + 75
+            )

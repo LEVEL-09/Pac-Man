@@ -43,6 +43,11 @@
         <sprite id="pinky_arrow_right" path="ghosts/pinky_arrow_right.png"/>
 
         <sprite id="clyde_circle" path="ghosts/clyde-circle.png"/>
+
+        <sprite id="inky_arrow_up" path="ghosts/inky_arrow_up.png"/>
+        <sprite id="inky_arrow_down" path="ghosts/inky_arrow_down.png"/>
+        <sprite id="inky_arrow_left" path="ghosts/inky_arrow_left.png"/>
+        <sprite id="inky_arrow_right" path="ghosts/inky_arrow_right.png"/>
     </sprites>
 
     <animated_sprites>
