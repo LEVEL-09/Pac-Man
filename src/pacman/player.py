@@ -1,6 +1,6 @@
 """Pac-Man player character."""
 
-from mlx_wrapper import KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, MLXApp
+from mlx_wrapper import KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, MLXApp, Sprite
 
 from pacman.hitbox import Hitbox
 
@@ -46,11 +46,20 @@ class Player(MovingEntity):
         game.bind_key(KEY_LEFT, self.move_left)
         game.bind_key(KEY_RIGHT, self.move_right)
 
+        self.blank = Sprite.blank(32, 32)
+        self.blank.fill(0xFF000000)
+
     def at_tile_center(self) -> None:
         """Handle when the player reaches the center of a tile."""
         # TODO: Add logic to increase score and notify when all
         # collectibles are collected
-        self.game.maze.collectibles.pop(self.curr_cell, None)
+        pacgum_type = self.game.maze.collectibles.pop(self.curr_cell, None)
+        if pacgum_type is not None:
+            self.blank.blit(
+                self.game.maze.canvas,
+                self.curr_cell[0] * 32,
+                self.curr_cell[1] * 32
+            )
 
     def update(self) -> None:
         """Update the player's position and state."""
