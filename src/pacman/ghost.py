@@ -319,22 +319,22 @@ class Pinky(Ghost):
         ):
             self.arrows["up"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
-                self.game.pacman.curr_cell[1] * 32 - 21
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset - 112 + 16
             )
         elif self.game.pacman.curr_state == "down":
             self.arrows["down"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
-                self.game.pacman.curr_cell[1] * 32 + 90
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset + 16
             )
         elif self.game.pacman.curr_state == "left":
             self.arrows["left"].draw_to_window(
-                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 96,
-                self.game.pacman.curr_cell[1] * 32 + 75
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 112 + 16,
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset
             )
         elif self.game.pacman.curr_state == "right":
             self.arrows["right"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 + 16,
-                self.game.pacman.curr_cell[1] * 32 + 75
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset
             )
 
 
@@ -456,7 +456,7 @@ class Inky(Ghost):
         """
         super().__init__(
             game,
-            (len(game.maze.grid) - 2, len(game.maze.grid) - 2),
+            (len(game.maze.grid[0]) - 2, len(game.maze.grid) - 2),
             3,
             0xA4CFEBFF,
         )
@@ -517,20 +517,20 @@ class Inky(Ghost):
         ):
             self.arrows["down"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
-                self.game.pacman.curr_cell[1] * 32 + 91
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset + 16
             )
         elif self.game.pacman.curr_state == "down":
             self.arrows["up"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32,
-                self.game.pacman.curr_cell[1] * 32 + 16
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset - 80 + 16
             )
         elif self.game.pacman.curr_state == "left":
             self.arrows["right"].draw_to_window(
                 self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 + 16,
-                self.game.pacman.curr_cell[1] * 32 + 75
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset
             )
         elif self.game.pacman.curr_state == "right":
             self.arrows["left"].draw_to_window(
-                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 64,
-                self.game.pacman.curr_cell[1] * 32 + 75
+                self.game.win_ptr, self.game.pacman.curr_cell[0] * 32 - 80 + 16,
+                self.game.pacman.curr_cell[1] * 32 + self.game.maze.y_offset
             )
