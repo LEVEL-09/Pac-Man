@@ -38,16 +38,16 @@ class MainMenu(Menu):
     def mount(self) -> None:
         """Mount the main menu, making it active and visible."""
         super().mount()
-        self.app.bind_key(KEY_DOWN, self.focus_next)
-        self.app.bind_key(KEY_UP, self.focus_prev)
-        self.app.bind_key(KEY_ENTER, self.focus_enter)
+        self.game.bind_key(KEY_DOWN, self.focus_next)
+        self.game.bind_key(KEY_UP, self.focus_prev)
+        self.game.bind_key(KEY_ENTER, self.focus_enter)
 
     def unmount(self) -> None:
         """Unmouount the main menu, making it inactive and invisible."""
         super().unmount()
-        self.app.unbind_key(KEY_DOWN)
-        self.app.unbind_key(KEY_UP)
-        self.app.unbind_key(KEY_ENTER)
+        self.game.unbind_key(KEY_DOWN)
+        self.game.unbind_key(KEY_UP)
+        self.game.unbind_key(KEY_ENTER)
 
     def draw_background(self) -> None:
         """Draw a background animation of moving stars."""
@@ -74,14 +74,13 @@ class MainMenu(Menu):
         y += self.draw_buttons(y, y_pad)
 
         y += 100
-        font = self.app.asset_manager.get_font("kolostygra")
+        font = self.game.asset_manager.get_font("kolostygra")
         font.draw_text(
             self.canvas,
             "Contributors",
             (self.canvas.width - font.measure_text("Contributors:")) // 2,
             y,
-            0xFFFFFFFF,
-            cache=True,
+            0xFFFFFFFF, cache=True
         )
         y += font.atlas.height + y_pad
         contributors = "Adnan BOUZKRAOUI & Mohammed KHOUBAZ"
@@ -90,16 +89,5 @@ class MainMenu(Menu):
             contributors,
             (self.canvas.width - font.measure_text(contributors)) // 2,
             y,
-            0xFFFFFFFF,
-            cache=True,
+            0xFFFFFFFF, cache=True
         )
-
-    def draw(self, win_ptr: int, x: int, y: int) -> None:
-        """Draw the menu on the window.
-
-        Args:
-            win_ptr (int): Window pointer.
-            x (int): X-coordinate of the top-left corner.
-            y (int): Y-coordinate of the top-left corner.
-        """
-        self.canvas.draw_to_window(win_ptr, x, y)

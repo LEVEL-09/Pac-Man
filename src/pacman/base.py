@@ -2,10 +2,11 @@
 
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable
-from typing import Any
+from typing import Callable
 
-from mlx_wrapper import AnimatedSprite, AssetManager, MLXApp, Sprite
+from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
+
+from .ui import Button
 
 
 class MovingEntity:
@@ -148,22 +149,22 @@ class Menu(ABC):
     """Abstract base class for menus.
 
     Attributes:
-        app (MLXApp): The MLX application instance.
-        canvas (Sprite): The canvas sprite for drawing.
+        game (MLXApp): Game instance.
+        canvas (Sprite): canvas sprite for drawing.
         buttons (list[Button]): List of buttons in the menu.
         current_btn (int): Index of the currently focused button.
 
     """
 
-    def __init__(self, app: MLXApp, width: int, height: int) -> None:
+    def __init__(self, game: MLXApp, width: int, height: int) -> None:
         """Initialize the menu with the given MLX application and dimensions.
 
         Args:
-            app (MLXApp): The MLX application instance.
+            game (MLXApp): Game instance.
             width (int): Width of the menu canvas.
             height (int): Height of the menu canvas.
         """
-        self.app = app
+        self.game = game
         self.canvas = Sprite.blank(width, height)
         self.buttons: list[Button] = []
         self.current_btn = -1
@@ -194,7 +195,7 @@ class Menu(ABC):
             callback (Callable[..., None]): The function to call when the
                 button is clicked.
         """
-        self.buttons.append(Button(text, callback, self.app.asset_manager))
+        self.buttons.append(Button(text, callback, self.game.am))
 
     def focus_enter(self) -> None:
         """Trigger the callback of the currently focused button."""
@@ -237,110 +238,10 @@ class Menu(ABC):
             y_offset += btn.h + y_pad
         return y + y_offset
 
-    def draw(self, win_ptr: int, x: int, y: int) -> None:
+    def draw(self, x: int, y: int) -> None:
         """Draw the menu to the window.
 
-        Args:
-            win_ptr (int): Pointer to the window.
-            x (int): X-coordinate of the top-left corner.
-            y (int): Y-coordinate of the top-left corner.
+        x: X-coordinate of the menu.
+        y: Y-coordinate of the menu.
         """
-        self.canvas.draw(win_ptr, x, y)
-
-
-class Button:
-    """Button that can be focused/unfocused and triggers a callback.
-
-    The callback is triggered when the button is focused and pressed
-    using KEY_ENTER. It builds the button's states (focused/unfocused)
-    from the given title and callback.
-
-    Attributes:
-        w (int): Width of the button.
-        h (int): Height of the button.
-        states (dict[bool, Sprite]): Dictionary of rendered states
-            (focused/unfocused).
-        callback (Callable[..., None]): Function to call when the button is
-            pressed.
-        focused (bool): Whether the button is currently focused.
-
-    """
-
-    def __init__(
-        self,
-        title: str,
-        callback: Callable[..., None],
-        am: AssetManager,
-        focused: bool = False,
-    ) -> None:
-        """Initialize the button with a title, callback, and asset manager.
-
-        Args:
-            title (str): Text to display on the button.
-            callback (Callable[..., None]): Function to call when the button is
-                pressed.
-            am (AssetManager): Asset manager to use for rendering.
-            focused (bool): Whether the button should be focused initially.
-                Defaults to False.
-        """
-        font = am.get_font("kolostygra")
-        text_w = font.measure_text(title)
-        slice_w = 58
-        slice_h = 64
-        mid_segments = text_w // slice_w + 1
-
-        self.w = (mid_segments + 2) * slice_w
-        self.h = slice_h
-        self.states = {
-            False: Sprite.blank(self.w, slice_h),
-            True: Sprite.blank(self.w, slice_h),
-        }
-        self.callback: Callable[..., None] = callback
-        self.focused = focused
-
-        am.get_sprite("btn_unfocused_start").blit(self.states[False], 0, 0)
-        am.get_sprite("btn_focused_start").blit(self.states[True], 0, 0)
-        for _ in range(1, mid_segments + 1):
-            am.get_sprite("btn_unfocused_mid").blit(
-                self.states[False], _ * slice_w, 0)
-            am.get_sprite("btn_focused_mid").blit(
-                self.states[True], _ * slice_w, 0)
-        am.get_sprite("btn_unfocused_end").blit(
-            self.states[False], self.w - slice_w, 0)
-        am.get_sprite("btn_focused_end").blit(
-            self.states[True], self.w - slice_w, 0)
-
-        font.draw_text(
-            self.states[False],
-            title,
-            (self.states[False].width - text_w) // 2,
-            (self.states[False].height - font.atlas.height) // 2 - 3,
-            0xFF9B6800,
-        )
-        font.draw_text(
-            self.states[True],
-            title,
-            (self.states[True].width - text_w) // 2,
-            (self.states[True].height - font.atlas.height) // 2 - 3,
-            0xFF189FC2,
-        )
-
-    def draw(self, target: Sprite, x: int, y: int) -> None:
-        """Draw the button's current state on the target sprite.
-
-        Args:
-            target (Sprite): Target sprite to draw on.
-            x (int): X-coordinate of the top-left corner of the button.
-            y (int): Y-coordinate of the top-left corner of the button.
-        """
-        self.states[self.focused].blit(target, x, y)
-
-    def on_click(self, *args: Any, **kwargs: Any) -> None:
-        """Event handler for when the button is clicked.
-
-        Args:
-            *args: Variable length argument list.
-            **kwargs: Variable length keyword arguments.
-        """
-        if self.focused:
-            self.callback(*args, **kwargs)
+        self.canvas.draw_to_window(self.game.win_ptr, x, y)
