@@ -238,6 +238,10 @@ class Menu(ABC):
             y_offset += btn.h + y_pad
         return y + y_offset
 
-    def draw(self) -> None:
-        """Draw the menu to the window."""
-        self.canvas.draw_to_window(self.game.win_ptr)
+    def draw(self, x: int, y: int) -> None:
+        """Draw the menu to the window.
+        
+        x: X-coordinate of the menu.
+        y: Y-coordinate of the menu.
+        """
+        self.canvas.draw_to_window(self.game.win_ptr, x, y)
