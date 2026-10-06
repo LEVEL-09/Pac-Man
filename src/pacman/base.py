@@ -240,6 +240,7 @@ class Menu(ABC):
 
     def draw(self, x: int, y: int) -> None:
         """Draw the menu to the window.
+
         x: X-coordinate of the menu.
         y: Y-coordinate of the menu.
         """
