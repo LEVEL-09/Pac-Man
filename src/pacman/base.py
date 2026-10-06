@@ -396,7 +396,7 @@ class Keyboard:
         self.width = (self.square_size + self.pad +
                       (self.border + self.margin) * 2) * 10
         self.height = (self.square_size + self.pad +
-                       (self.border + self.margin) * 2) * 3
+                       (self.border + self.margin) * 2) * 4
 
         self.layouts = {
             True: Sprite.blank(self.width, self.height),
@@ -404,8 +404,12 @@ class Keyboard:
         }
 
         # Characters for lowercase and uppercase layouts
-        self._chars_lc = ["qwertyuiop", "↑asdfghjkl", "zxcvbnm–←"]
-        self._chars_uc = ["QWERTYUIOP", "↑ASDFGHJKL", "ZXCVBNM–←"]
+        self._chars_lc = [
+            "0123456789", "qwertyuiop", "↑asdfghjkl", "zxcvbnm–←"
+        ]
+        self._chars_uc = [
+            "0123456789", "QWERTYUIOP", "↑ASDFGHJKL", "ZXCVBNM–←"
+        ]
 
         # Whether the caps lock is on
         self._caps_lock = False
@@ -516,7 +520,7 @@ class Keyboard:
     def _focus_down(self) -> None:
         """Focus the key below the current key."""
         self._set_key_color(0x7FFFFFFF)
-        self.row = min(2, self.row + 1)
+        self.row = min(3, self.row + 1)
         self.col = min(self.col, len(self._curr_layout()[self.row]) - 1)
         self._set_key_color(0xFFFFFFFF)
 
