@@ -175,8 +175,8 @@ class Keyboard:
         self._render_keyboard()
         self._set_key_color(0xFFFFFFFF)
 
-
     def mount(self) -> None:
+        """Mount the keyboard by binding key events."""
         self.game.bind_key(KEY_SPACE, self._type_char)
         self.game.bind_key(KEY_UP, self._focus_up)
         self.game.bind_key(KEY_DOWN, self._focus_down)
@@ -184,6 +184,7 @@ class Keyboard:
         self.game.bind_key(KEY_LEFT, self._focus_left)
 
     def unmount(self) -> None:
+        """Unmount the keyboard by unbinding key events."""
         self.game.unbind_key(KEY_SPACE)
         self.game.unbind_key(KEY_UP)
         self.game.unbind_key(KEY_DOWN)
@@ -275,11 +276,16 @@ class Keyboard:
             color
         )
 
+    # TODO: decide whether to keep draw or blit
     def draw(self) -> None:
         """Draw the keyboard to the window."""
         self.layouts[self._caps_lock].draw_to_window(
             self.game.win_ptr, self.x, self.y
         )
+
+    def blit(self, target: Sprite) -> None:
+        """Blit the keyboard to the target sprite."""
+        self.layouts[self._caps_lock].blit(target, self.x, self.y)
 
     def _key_coords(self) -> tuple[int, int]:
         """Get the coordinates of the current key.

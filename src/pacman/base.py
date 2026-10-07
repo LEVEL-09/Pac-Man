@@ -5,7 +5,14 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 import numpy as np
-from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
+from mlx_wrapper import (
+    KEY_DOWN,
+    KEY_ENTER,
+    KEY_UP,
+    AnimatedSprite,
+    MLXApp,
+    Sprite,
+)
 
 from .ui import Button
 
@@ -19,6 +26,13 @@ class Scene(ABC):
         game: Game instance.
         """
         self.game = game
+        self.canvas = Sprite.blank(game.width, game.height)
+        self.canvas.fill(0xFF180000)
+        self.buttons: list[Button] = []
+        self.current_btn = -1
+        self._stars = np.random.randint(
+            low=[0, 0], high=[game.width, game.height], size=(300, 2)
+        )
 
     @abstractmethod
     def mount(self) -> None:
@@ -39,6 +53,120 @@ class Scene(ABC):
         x: X-coordinate to draw the scene.
         y: Y-coordinate to draw the scene.
         """
+
+    def draw_stars(self) -> None:
+        """Draw a background animation of moving stars."""
+        self._stars += 1
+        self._stars[:, 0] %= self.canvas.width
+        self._stars[:, 1] %= self.canvas.height
+        self.canvas.fill(0xFF180000)
+
+        star_size = 2
+        for x, y in self._stars:
+            x_end = min(x + star_size, self.canvas.width)
+            y_end = min(y + star_size, self.canvas.height)
+            self.canvas.pixels[y:y_end, x:x_end] = 0xFFFFFFFF
+
+
+class Menu(Scene, ABC):
+    """Abstract base class for menus.
+
+    Attributes:
+        game: Game instance.
+        canvas: canvas sprite for drawing.
+        buttons: List of buttons in the menu.
+        current_btn: Index of the currently focused button.
+
+    """
+
+    def __init__(self, game: MLXApp) -> None:
+        """Initialize the menu with the given MLX application and dimensions.
+
+        Args:
+            game: Game instance.
+        """
+        super().__init__(game)
+        self.canvas = Sprite.blank(game.width, game.height)
+        self.buttons: list[Button] = []
+        self.current_btn = -1
+        self._stars = np.random.randint(
+            low=[0, 0], high=[game.width, game.height], size=(300, 2)
+        )
+
+    def mount(self) -> None:
+        """Mount the main menu, making it active and visible."""
+        self.game.bind_key(KEY_DOWN, self.focus_next)
+        self.game.bind_key(KEY_UP, self.focus_prev)
+        self.game.bind_key(KEY_ENTER, self.focus_enter)
+
+    def unmount(self) -> None:
+        """Unmouount the main menu, making it inactive and invisible."""
+        self.game.unbind_key(KEY_DOWN)
+        self.game.unbind_key(KEY_UP)
+        self.game.unbind_key(KEY_ENTER)
+
+    @abstractmethod
+    def update(self) -> None:
+        """Update the menu state."""
+
+    def add_button(self, text: str, callback: Callable[..., None]) -> None:
+        """Add a button to the menu.
+
+        Args:
+            text: The text to display on the button.
+            callback: The function to call when the
+                button is clicked.
+        """
+        self.buttons.append(Button(text, callback, self.game.am))
+
+    def focus_enter(self) -> None:
+        """Trigger the callback of the currently focused button."""
+        if self.current_btn != -1:
+            self.buttons[self.current_btn].on_click()
+
+    def focus_next(self) -> None:
+        """Move focus to the next button."""
+        if self.current_btn == -1:
+            self.current_btn = 0
+        else:
+            self.buttons[self.current_btn].focused = False
+            self.current_btn = (self.current_btn + 1) % len(self.buttons)
+        self.buttons[self.current_btn].focused = True
+
+    def focus_prev(self) -> None:
+        """Move focus to the previous button."""
+        if self.current_btn == -1:
+            self.current_btn = len(self.buttons) - 1
+        else:
+            self.buttons[self.current_btn].focused = False
+            self.current_btn = (self.current_btn - 1) % len(self.buttons)
+        self.buttons[self.current_btn].focused = True
+
+    def draw_buttons(self, y: int, y_pad: int) -> int:
+        """Draw all buttons on the canvas.
+
+        Args:
+            y: Starting y-coordinate for the first button.
+            y_pad: Padding between buttons.
+
+        Returns:
+            int: The final y-coordinate after drawing all buttons.
+        """
+        y_offset = 0
+        for btn in self.buttons:
+            btn.draw(
+                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset
+            )
+            y_offset += btn.h + y_pad
+        return y + y_offset
+
+    def draw(self, x: int, y: int) -> None:
+        """Draw the menu to the window.
+
+        x: X-coordinate of the menu.
+        y: Y-coordinate of the menu.
+        """
+        self.canvas.draw_to_window(self.game.win_ptr, x, y)
 
 
 class MovingEntity:
@@ -175,105 +303,3 @@ class MovingEntity:
         self.animations[self.curr_state].draw_to_window(
             self.game.win_ptr, self.x, self.y + self.game.maze.y_offset
         )
-
-
-class Menu(Scene, ABC):
-    """Abstract base class for menus.
-
-    Attributes:
-        game: Game instance.
-        canvas: canvas sprite for drawing.
-        buttons: List of buttons in the menu.
-        current_btn: Index of the currently focused button.
-
-    """
-
-    def __init__(self, game: MLXApp) -> None:
-        """Initialize the menu with the given MLX application and dimensions.
-
-        Args:
-            game: Game instance.
-        """
-        super().__init__(game)
-        self.canvas = Sprite.blank(game.width, game.height)
-        self.buttons: list[Button] = []
-        self.current_btn = -1
-        self._stars = np.random.randint(
-            low=[0, 0], high=[game.width, game.height], size=(300, 2)
-        )
-
-    def draw_background(self) -> None:
-        """Draw a background animation of moving stars."""
-        self._stars += 1
-        self._stars[:, 0] %= self.canvas.width
-        self._stars[:, 1] %= self.canvas.height
-        self.canvas.fill(0xFF180000)
-
-        star_size = 2
-        for x, y in self._stars:
-            x_end = min(x + star_size, self.canvas.width)
-            y_end = min(y + star_size, self.canvas.height)
-            self.canvas.pixels[y:y_end, x:x_end] = 0xFFFFFFFF
-
-    @abstractmethod
-    def update(self) -> None:
-        """Update the menu state."""
-
-    def add_button(self, text: str, callback: Callable[..., None]) -> None:
-        """Add a button to the menu.
-
-        Args:
-            text: The text to display on the button.
-            callback: The function to call when the
-                button is clicked.
-        """
-        self.buttons.append(Button(text, callback, self.game.am))
-
-    def focus_enter(self) -> None:
-        """Trigger the callback of the currently focused button."""
-        if self.current_btn != -1:
-            self.buttons[self.current_btn].on_click()
-
-    def focus_next(self) -> None:
-        """Move focus to the next button."""
-        if self.current_btn == -1:
-            self.current_btn = 0
-        else:
-            self.buttons[self.current_btn].focused = False
-            self.current_btn = (self.current_btn + 1) % len(self.buttons)
-        self.buttons[self.current_btn].focused = True
-
-    def focus_prev(self) -> None:
-        """Move focus to the previous button."""
-        if self.current_btn == -1:
-            self.current_btn = len(self.buttons) - 1
-        else:
-            self.buttons[self.current_btn].focused = False
-            self.current_btn = (self.current_btn - 1) % len(self.buttons)
-        self.buttons[self.current_btn].focused = True
-
-    def draw_buttons(self, y: int, y_pad: int) -> int:
-        """Draw all buttons on the canvas.
-
-        Args:
-            y: Starting y-coordinate for the first button.
-            y_pad: Padding between buttons.
-
-        Returns:
-            int: The final y-coordinate after drawing all buttons.
-        """
-        y_offset = 0
-        for btn in self.buttons:
-            btn.draw(
-                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset
-            )
-            y_offset += btn.h + y_pad
-        return y + y_offset
-
-    def draw(self, x: int, y: int) -> None:
-        """Draw the menu to the window.
-
-        x: X-coordinate of the menu.
-        y: Y-coordinate of the menu.
-        """
-        self.canvas.draw_to_window(self.game.win_ptr, x, y)
