@@ -3,7 +3,7 @@
 from mlx_wrapper import AssetManager, MLXApp
 
 from src.pacman.base import Scene
-from src.pacman.menus import MainMenu
+from src.pacman.menus import EndScene, MainMenu
 
 
 class Game(MLXApp):
@@ -11,6 +11,7 @@ class Game(MLXApp):
         super().__init__(width, height, title)
         self.am = AssetManager("./assets.xml")
         self._scene_stack = []
+        self.push_scene(EndScene(self, True))
         self.push_scene(MainMenu(self))
 
     @property
@@ -30,12 +31,20 @@ class Game(MLXApp):
             self._scene_stack.pop()
         if self._current_scene:
             self._current_scene.mount()
-    
+
     def switch_scene(self, new_scene: Scene) -> None:
         if self._current_scene:
             self._current_scene.unmount()
             self._scene_stack.pop()
         self.push_scene(new_scene)
+
+    def swap_scene(self) -> None:
+        if self._current_scene:
+            self._current_scene.unmount()
+            tmp = self._current_scene
+            self._scene_stack[-1] = self._scene_stack[-2]
+            self._scene_stack[-2] = tmp
+            self._current_scene.mount()
 
     def update(self) -> None:
         if self._current_scene:
@@ -44,4 +53,4 @@ class Game(MLXApp):
 
 
 if __name__ == "__main__":
-    Game(800, 600, "Pac-Man").start()
+    Game(1800, 1600, "Pac-Man").start()
