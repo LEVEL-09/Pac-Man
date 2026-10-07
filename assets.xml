@@ -17,6 +17,9 @@
         <sprite id="btn_unfocused_mid" path="interface/btn-unfocused-bg-mid.png"/>
         <sprite id="btn_unfocused_end" path="interface/btn-unfocused-bg-end.png"/>
 
+        <sprite id="win" path="interface/win.png"/>
+        <sprite id="game_over" path="interface/game-over.png"/>
+
         <!-- maze -->
         <sprite id="pacgum" path="maze/pacgum.png"/>
         <sprite id="spacgum" path="maze/spacgum.png"/>

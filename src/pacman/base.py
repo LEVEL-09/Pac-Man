@@ -4,28 +4,60 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 
+import numpy as np
 from mlx_wrapper import AnimatedSprite, MLXApp, Sprite
 
 from .ui import Button
+
+
+class Scene(ABC):
+    """Base class for all scenes in the game."""
+
+    def __init__(self, game: MLXApp) -> None:
+        """Initialize the scene.
+
+        game: Game instance.
+        """
+        self.game = game
+
+    @abstractmethod
+    def mount(self) -> None:
+        """Mount the scene."""
+
+    @abstractmethod
+    def unmount(self) -> None:
+        """Unmount the scene."""
+
+    @abstractmethod
+    def update(self) -> None:
+        """Update the scene."""
+
+    @abstractmethod
+    def draw(self, x: int, y: int) -> None:
+        """Draw the scene.
+
+        x: X-coordinate to draw the scene.
+        y: Y-coordinate to draw the scene.
+        """
 
 
 class MovingEntity:
     """Base class for all moving entities in the game.
 
     Attributes:
-        game (MLXApp): Game instance.
-        gw (int): width of the maze grid.
-        gh (int): height of the maze grid.
-        curr_cell (tuple[int, int]): current cell position.
-        x (int): X-coordinate of the entity.
-        y (int): Y-coordinate of the entity.
-        speed (int): Speed of the entity.
-        dx (int): X-direction of the entity.
-        dy (int): Y-direction of the entity.
-        next_dx (int): Next x-direction of the entity.
-        next_dy (int): Next y-direction of the entity.
-        curr_state (str): current state of the entity.
-        animations (dict[str, AnimatedSprite]): Animations of the entity.
+        game: Game instance.
+        gw: width of the maze grid.
+        gh: height of the maze grid.
+        curr_cell: current cell position.
+        x: X-coordinate of the entity.
+        y: Y-coordinate of the entity.
+        speed: Speed of the entity.
+        dx: X-direction of the entity.
+        dy: Y-direction of the entity.
+        next_dx: Next x-direction of the entity.
+        next_dy: Next y-direction of the entity.
+        curr_state: current state of the entity.
+        animations: Animations of the entity.
     """
 
     CELL_SIZE = 32
@@ -36,9 +68,9 @@ class MovingEntity:
         """Initialize the moving entity.
 
         Args:
-            game (MLXApp): Game instance.
-            start_cell (tuple[int, int]): Starting cell position.
-            speed (int): Speed of the entity.
+            game: Game instance.
+            start_cell: Starting cell position.
+            speed: Speed of the entity.
         """
         self.game = game
         self.gw = len(game.maze.grid[0]) - 1
@@ -75,8 +107,8 @@ class MovingEntity:
         """Update the entity's direction and state based on the new direction.
 
         Args:
-            new_dx (int): new x direction.
-            new_dy (int): new y direction.
+            new_dx: new x direction.
+            new_dy: new y direction.
         """
         old_state = self.curr_state
         self.dx = new_dx
@@ -145,43 +177,43 @@ class MovingEntity:
         )
 
 
-class Menu(ABC):
+class Menu(Scene, ABC):
     """Abstract base class for menus.
 
     Attributes:
-        game (MLXApp): Game instance.
-        canvas (Sprite): canvas sprite for drawing.
-        buttons (list[Button]): List of buttons in the menu.
-        current_btn (int): Index of the currently focused button.
+        game: Game instance.
+        canvas: canvas sprite for drawing.
+        buttons: List of buttons in the menu.
+        current_btn: Index of the currently focused button.
 
     """
 
-    def __init__(self, game: MLXApp, width: int, height: int) -> None:
+    def __init__(self, game: MLXApp) -> None:
         """Initialize the menu with the given MLX application and dimensions.
 
         Args:
-            game (MLXApp): Game instance.
-            width (int): Width of the menu canvas.
-            height (int): Height of the menu canvas.
+            game: Game instance.
         """
-        self.game = game
-        self.canvas = Sprite.blank(width, height)
+        super().__init__(game)
+        self.canvas = Sprite.blank(game.width, game.height)
         self.buttons: list[Button] = []
         self.current_btn = -1
-        # Whether the menu is currently active.
-        self._is_active = False
+        self._stars = np.random.randint(
+            low=[0, 0], high=[game.width, game.height], size=(300, 2)
+        )
 
-    def mount(self) -> None:
-        """Mount the menu, making it active and visible."""
-        self._is_active = True
-
-    def unmount(self) -> None:
-        """Unmount the menu, making it inactive and hidden."""
-        self._is_active = False
-
-    @abstractmethod
     def draw_background(self) -> None:
-        """Draw the background of the menu."""
+        """Draw a background animation of moving stars."""
+        self._stars += 1
+        self._stars[:, 0] %= self.canvas.width
+        self._stars[:, 1] %= self.canvas.height
+        self.canvas.fill(0xFF180000)
+
+        star_size = 2
+        for x, y in self._stars:
+            x_end = min(x + star_size, self.canvas.width)
+            y_end = min(y + star_size, self.canvas.height)
+            self.canvas.pixels[y:y_end, x:x_end] = 0xFFFFFFFF
 
     @abstractmethod
     def update(self) -> None:
@@ -191,8 +223,8 @@ class Menu(ABC):
         """Add a button to the menu.
 
         Args:
-            text (str): The text to display on the button.
-            callback (Callable[..., None]): The function to call when the
+            text: The text to display on the button.
+            callback: The function to call when the
                 button is clicked.
         """
         self.buttons.append(Button(text, callback, self.game.am))
@@ -224,8 +256,8 @@ class Menu(ABC):
         """Draw all buttons on the canvas.
 
         Args:
-            y (int): Starting y-coordinate for the first button.
-            y_pad (int): Padding between buttons.
+            y: Starting y-coordinate for the first button.
+            y_pad: Padding between buttons.
 
         Returns:
             int: The final y-coordinate after drawing all buttons.

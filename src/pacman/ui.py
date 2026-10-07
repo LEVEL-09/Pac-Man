@@ -175,11 +175,20 @@ class Keyboard:
         self._render_keyboard()
         self._set_key_color(0xFFFFFFFF)
 
+
+    def mount(self) -> None:
         self.game.bind_key(KEY_SPACE, self._type_char)
         self.game.bind_key(KEY_UP, self._focus_up)
         self.game.bind_key(KEY_DOWN, self._focus_down)
         self.game.bind_key(KEY_RIGHT, self._focus_right)
         self.game.bind_key(KEY_LEFT, self._focus_left)
+
+    def unmount(self) -> None:
+        self.game.unbind_key(KEY_SPACE)
+        self.game.unbind_key(KEY_UP)
+        self.game.unbind_key(KEY_DOWN)
+        self.game.unbind_key(KEY_RIGHT)
+        self.game.unbind_key(KEY_LEFT)
 
     def _curr_layout(self) -> list[str]:
         """Get the current layout (lowercase or uppercase).
