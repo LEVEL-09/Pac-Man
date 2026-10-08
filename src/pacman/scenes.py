@@ -61,7 +61,7 @@ class EndScene(Scene):
     Attributes:
         lost: Whether the player lost or won.
     """
-    
+
     def __init__(self, game: MLXApp, lost: bool) -> None:
         """Initialize the end scene.
 
