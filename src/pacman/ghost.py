@@ -21,8 +21,8 @@ class GhostState(Enum):
         EATEN: Ghost has been eaten and returns to its respawn point.
     """
 
-    SCATTER = auto()
     CHASE = auto()
+    SCATTER = auto()
     FRIGHTENED = auto()
     EATEN = auto()
 
@@ -73,6 +73,7 @@ class Ghost(ABC, MovingEntity):
         self.drawable_path = Sprite.blank(
             game.maze.canvas.width, game.maze.canvas.height
         )
+        self._add_animation('eaten', self.game.am.get_animated_sprite('eaten'))
 
     def at_tile_center(self) -> None:
         """Advance the ghost along its path when it reaches a tile center.
@@ -188,6 +189,9 @@ class Ghost(ABC, MovingEntity):
 
     def scatter_mode(self) -> None:
         """Handle behavior while in `GhostState.SCATTER`."""
+        self.set_target(self.corner)
+
+        self.set_target(self.corner)
 
     @abstractmethod
     def chase_mode(self) -> None:
@@ -203,6 +207,35 @@ class Ghost(ABC, MovingEntity):
 
     def eaten_mode(self) -> None:
         """Handle behavior while in `GhostState.EATEN`."""
+        self.set_target(self.corner)
+
+        if self.curr_cell == self.corner:
+            self.state = GhostState.CHASE
+
+    def _update_direction(self, new_dx: int, new_dy: int) -> None:
+        """Update the entity's direction and state based on the new direction.
+
+        Args:
+            new_dx (int): new x direction.
+            new_dy (int): new y direction.
+        """
+        self.dx = new_dx
+        self.dy = new_dy
+
+        if (self.state == GhostState.CHASE
+           or self.state == GhostState.SCATTER):
+            if self.dx == 1:
+                self.curr_state = "right"
+            elif self.dx == -1:
+                self.curr_state = "left"
+            elif self.dy == 1:
+                self.curr_state = "down"
+            elif self.dy == -1:
+                self.curr_state = "up"
+        elif self.state == GhostState.EATEN:
+            self.curr_state = "eaten"
+
+        self.animations[self.curr_state].play()
 
     def update(self) -> None:
         """Update the ghost for the current frame.
