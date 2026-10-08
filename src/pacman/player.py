@@ -2,8 +2,8 @@
 
 from mlx_wrapper import KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, MLXApp, Sprite
 
-from .base import MovingEntity
-from .hitbox import Hitbox
+from pacman.base import MovingEntity
+from pacman.hitbox import Hitbox
 
 
 class Player(MovingEntity):

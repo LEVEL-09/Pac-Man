@@ -14,7 +14,7 @@ from mlx_wrapper import (
     Sprite,
 )
 
-from .ui import Button
+from pacman.ui import Button
 
 
 class Scene(ABC):

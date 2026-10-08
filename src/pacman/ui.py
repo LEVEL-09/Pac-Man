@@ -129,16 +129,18 @@ class Keyboard:
         buffer: The buffer of characters typed by the user.
     """
 
-    def __init__(self, game: MLXApp, x: int, y: int) -> None:
+    def __init__(self, game: MLXApp, x: int, y: int, text_limit: int) -> None:
         """Initialize the keyboard with the given game instance and position.
 
         Args:
             game: game instance.
             x: X-coordinate of the keyboard.
             y: Y-coordinate of the keyboard.
+            text_limit: maximum number of characters allowed in the buffer.
         """
         self.game = game
         self.x, self.y = x, y
+        self.text_limit = text_limit
 
         self.font_med = self.game.am.get_font('minecraft_medium')
         self.font_sm = self.game.am.get_font('minecraft_small')
@@ -343,9 +345,10 @@ class Keyboard:
         if char == '↑':
             self._caps_lock = not self._caps_lock
             self._set_key_color(0xFFFFFFFF)
-        elif char == '–':
-            self.buffer += ' '
         elif char == '←':
             self.buffer = self.buffer[:-1]
-        else:
-            self.buffer += char
+        elif len(self.buffer) < self.text_limit:
+            if char == '–':
+                self.buffer += ' '
+            else:
+                self.buffer += char

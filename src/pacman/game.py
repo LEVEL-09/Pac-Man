@@ -3,7 +3,7 @@
 from mlx_wrapper import AssetManager, MLXApp
 
 from pacman.base import Scene
-from pacman.menus import MainMenu
+from pacman.scenes import MainMenu
 
 
 class Game(MLXApp):
