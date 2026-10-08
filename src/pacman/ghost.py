@@ -1,6 +1,7 @@
 """Module containing the Ghosts classes and its states."""
 
 import math
+import random
 from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum, auto
@@ -191,8 +192,6 @@ class Ghost(ABC, MovingEntity):
         """Handle behavior while in `GhostState.SCATTER`."""
         self.set_target(self.corner)
 
-        self.set_target(self.corner)
-
     @abstractmethod
     def chase_mode(self) -> None:
         """Handle behavior while in `GhostState.CHASE`.
@@ -204,6 +203,22 @@ class Ghost(ABC, MovingEntity):
 
     def frightened_mode(self) -> None:
         """Handle behavior while in `GhostState.FRIGHTENED`."""
+        if self.curr_cell == self.target_cell:
+            x, y = (random.randint(1, len(self.game.maze.grid[0]) - 2),
+                    random.randint(1, len(self.game.maze.grid) - 2))
+            is_reachable = any(
+                self.game.maze.grid[y + dy][x + dx] == 0
+                for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+            )
+
+            while self.game.maze.grid[y][x] != 0 or not is_reachable:
+                x, y = (random.randint(1, len(self.game.maze.grid[0]) - 2),
+                        random.randint(1, len(self.game.maze.grid) - 2))
+                is_reachable = any(
+                    self.game.maze.grid[y + dy][x + dx] == 0
+                    for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+                )
+            self.set_target((x, y))
 
     def eaten_mode(self) -> None:
         """Handle behavior while in `GhostState.EATEN`."""
