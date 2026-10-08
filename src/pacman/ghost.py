@@ -1,6 +1,7 @@
 """Module containing the Ghosts classes and its states."""
 
 import math
+import random
 from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum, auto
@@ -21,8 +22,8 @@ class GhostState(Enum):
         EATEN: Ghost has been eaten and returns to its respawn point.
     """
 
-    SCATTER = auto()
     CHASE = auto()
+    SCATTER = auto()
     FRIGHTENED = auto()
     EATEN = auto()
 
@@ -73,6 +74,7 @@ class Ghost(ABC, MovingEntity):
         self.drawable_path = Sprite.blank(
             game.maze.canvas.width, game.maze.canvas.height
         )
+        self._add_animation('eaten', self.game.am.get_animated_sprite('eaten'))
 
     def at_tile_center(self) -> None:
         """Advance the ghost along its path when it reaches a tile center.
@@ -187,7 +189,8 @@ class Ghost(ABC, MovingEntity):
         )
 
     def scatter_mode(self) -> None:
-        """Handle behavior while in `GhostState.SCATTER`."""
+        """Set the ghost's assigned corner as its target while scattering."""
+        self.set_target(self.corner)
 
     @abstractmethod
     def chase_mode(self) -> None:
@@ -199,10 +202,63 @@ class Ghost(ABC, MovingEntity):
         """
 
     def frightened_mode(self) -> None:
-        """Handle behavior while in `GhostState.FRIGHTENED`."""
+        """Choose a random target after reaching the current one.
+
+        Selects an interior maze cell that is open and has at least one
+        open orthogonal neighbor. Keeps the existing target until the
+        ghost reaches it.
+        """
+        if self.curr_cell == self.target_cell:
+            x, y = (random.randint(1, len(self.game.maze.grid[0]) - 2),
+                    random.randint(1, len(self.game.maze.grid) - 2))
+            is_reachable = any(
+                self.game.maze.grid[y + dy][x + dx] == 0
+                for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+            )
+
+            while self.game.maze.grid[y][x] != 0 or not is_reachable:
+                x, y = (random.randint(1, len(self.game.maze.grid[0]) - 2),
+                        random.randint(1, len(self.game.maze.grid) - 2))
+                is_reachable = any(
+                    self.game.maze.grid[y + dy][x + dx] == 0
+                    for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+                )
+            self.set_target((x, y))
 
     def eaten_mode(self) -> None:
-        """Handle behavior while in `GhostState.EATEN`."""
+        """Target the ghost's assigned corner after being eaten.
+
+        Switches to `GhostState.CHASE` once the ghost reaches its corner.
+        """
+        self.set_target(self.corner)
+
+        if self.curr_cell == self.corner:
+            self.state = GhostState.CHASE
+
+    def _update_direction(self, new_dx: int, new_dy: int) -> None:
+        """Update the entity's direction and state based on the new direction.
+
+        Args:
+            new_dx (int): new x direction.
+            new_dy (int): new y direction.
+        """
+        self.dx = new_dx
+        self.dy = new_dy
+
+        if (self.state == GhostState.CHASE
+           or self.state == GhostState.SCATTER):
+            if self.dx == 1:
+                self.curr_state = "right"
+            elif self.dx == -1:
+                self.curr_state = "left"
+            elif self.dy == 1:
+                self.curr_state = "down"
+            elif self.dy == -1:
+                self.curr_state = "up"
+        elif self.state == GhostState.EATEN:
+            self.curr_state = "eaten"
+
+        self.animations[self.curr_state].play()
 
     def update(self) -> None:
         """Update the ghost for the current frame.
