@@ -189,7 +189,7 @@ class Ghost(ABC, MovingEntity):
         )
 
     def scatter_mode(self) -> None:
-        """Handle behavior while in `GhostState.SCATTER`."""
+        """Set the ghost's assigned corner as its target while scattering."""
         self.set_target(self.corner)
 
     @abstractmethod
@@ -202,7 +202,12 @@ class Ghost(ABC, MovingEntity):
         """
 
     def frightened_mode(self) -> None:
-        """Handle behavior while in `GhostState.FRIGHTENED`."""
+        """Choose a random target after reaching the current one.
+
+        Selects an interior maze cell that is open and has at least one
+        open orthogonal neighbor. Keeps the existing target until the
+        ghost reaches it.
+        """
         if self.curr_cell == self.target_cell:
             x, y = (random.randint(1, len(self.game.maze.grid[0]) - 2),
                     random.randint(1, len(self.game.maze.grid) - 2))
@@ -221,7 +226,10 @@ class Ghost(ABC, MovingEntity):
             self.set_target((x, y))
 
     def eaten_mode(self) -> None:
-        """Handle behavior while in `GhostState.EATEN`."""
+        """Target the ghost's assigned corner after being eaten.
+
+        Switches to `GhostState.CHASE` once the ghost reaches its corner.
+        """
         self.set_target(self.corner)
 
         if self.curr_cell == self.corner:
