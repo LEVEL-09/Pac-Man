@@ -1,6 +1,7 @@
 """UI components for the Pac-Man game."""
 
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from mlx_wrapper import (
     KEY_DOWN,

@@ -1,9 +1,9 @@
 """Pac-Man game scene manager."""
 
-from mlx_wrapper import AssetManager, MLXApp
+from mlx_wrapper import KEY_ESC, AssetManager, MLXApp
 
 from pacman.base import Scene
-from pacman.menus import MainMenu
+from pacman.menus import MainMenu, PauseMenu
 
 
 class Game(MLXApp):
@@ -22,10 +22,11 @@ class Game(MLXApp):
             height: height of the game window.
             title: title of the game window.
         """
-        super().__init__(width, height, title)
+        super().__init__((width * 2 + 1) * 32, (height * 2 + 1) * 32 + 99, title)
         self.am = AssetManager("./assets.xml")
         self._scene_stack: list[Scene] = []
         self.push_scene(MainMenu(self))
+        self.bind_key(KEY_ESC, lambda: self.push_scene(PauseMenu(self)))
 
     @property
     def _current_scene(self) -> Scene | None:
