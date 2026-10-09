@@ -8,8 +8,8 @@ from enum import Enum, auto
 
 from mlx_wrapper import MLXApp, Sprite
 
-from .base import MovingEntity
-from .hitbox import Hitbox
+from pacman.base import MovingEntity
+from pacman.hitbox import Hitbox
 
 
 class GhostState(Enum):

@@ -1,8 +1,7 @@
-"""In-game menus, including the main menu and its buttons."""
-
+"""Module containing menus for the Pac-Man game."""
 from mlx_wrapper import MLXApp
 
-from .base import Menu
+from pacman.base import Menu
 
 
 class MainMenu(Menu):
@@ -38,8 +37,7 @@ class MainMenu(Menu):
         font.draw_text(
             self.canvas,
             "Contributors",
-            (self.canvas.width - font.measure_text("Contributors:")) // 2,
-            y,
+            (self.canvas.width - font.measure_text("Contributors:")) // 2, y,
             0xFFFFFFFF, cache=True
         )
         y += font.atlas.height + y_pad
@@ -47,7 +45,6 @@ class MainMenu(Menu):
         font.draw_text(
             self.canvas,
             contributors,
-            (self.canvas.width - font.measure_text(contributors)) // 2,
-            y,
+            (self.canvas.width - font.measure_text(contributors)) // 2, y,
             0xFFFFFFFF, cache=True
         )
