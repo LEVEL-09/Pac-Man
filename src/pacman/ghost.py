@@ -75,6 +75,10 @@ class Ghost(ABC, MovingEntity):
             game.maze.canvas.width, game.maze.canvas.height
         )
         self._add_animation('eaten', self.game.am.get_animated_sprite('eaten'))
+        self._add_animation(
+            'frightened',
+            self.game.am.get_animated_sprite('frightened')
+        )
 
     def at_tile_center(self) -> None:
         """Advance the ghost along its path when it reaches a tile center.
@@ -257,6 +261,8 @@ class Ghost(ABC, MovingEntity):
                 self.curr_state = "up"
         elif self.state == GhostState.EATEN:
             self.curr_state = "eaten"
+        elif self.state == GhostState.FRIGHTENED:
+            self.curr_state = "frightened"
 
         self.animations[self.curr_state].play()
 
