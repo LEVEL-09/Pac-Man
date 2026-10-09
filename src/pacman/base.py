@@ -1,8 +1,7 @@
 """Module containing base classes for the game."""
 
-
 from abc import ABC, abstractmethod
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
 
 import numpy as np
 from mlx_wrapper import (
@@ -16,29 +15,39 @@ from mlx_wrapper import (
 )
 
 from pacman.ui import Button
+from pacman.maze import Maze
 
 
 class Scene(ABC):
     """Base class for all scenes in the game."""
 
-    def __init__(self, game: MLXApp) -> None:
+    __game: ClassVar[MLXApp | None] = None
+
+    def __init__(self) -> None:
         """Initialize the scene.
 
         game: Game instance.
         """
-        self.game = game
+        self.game: MLXApp = self.get_game()
         self.am = AssetManager("./assets.xml")
-        self.canvas = Sprite.blank(game.width, game.height)
-        self.canvas.fill(0xFF180000)
-        self.buttons: list[Button] = []
-        self.current_btn = -1
+        self.canvas = Sprite.blank(self.game.width, self.game.height)
         self._stars = np.random.randint(
-            low=[0, 0], high=[game.width, game.height], size=(300, 2)
+            low=[0, 0], high=[self.game.width, self.game.height], size=(300, 2)
         )
+
+    @classmethod
+    def set_game(cls, game: MLXApp) -> None:
+        """Set the global game context variable."""
+        cls.__game: MLXApp = game
+
+    @classmethod
+    def get_game(cls) -> MLXApp | None:
+        """Get the global game context variable."""
+        return cls.__game
 
     def get_config_attr(self, attr: str) -> Any:
         """Get a configuration attribute."""
-        return getattr(self.game.config, attr)
+        return getattr(self.__game.config, attr)
 
     @abstractmethod
     def mount(self) -> None:
@@ -85,18 +94,18 @@ class Menu(Scene, ABC):
 
     """
 
-    def __init__(self, game: MLXApp) -> None:
+    def __init__(self) -> None:
         """Initialize the menu with the given MLX application and dimensions.
 
         Args:
             game: Game instance.
         """
-        super().__init__(game)
-        self.canvas = Sprite.blank(game.width, game.height)
+        super().__init__()
+        self.canvas = Sprite.blank(self.game.width, self.game.height)
         self.buttons: list[Button] = []
         self.current_btn = -1
         self._stars = np.random.randint(
-            low=[0, 0], high=[game.width, game.height], size=(300, 2)
+            low=[0, 0], high=[self.game.width, self.game.height], size=(300, 2)
         )
 
     def mount(self) -> None:
@@ -123,7 +132,7 @@ class Menu(Scene, ABC):
             callback: The function to call when the
                 button is clicked.
         """
-        self.buttons.append(Button(text, callback, self.game.am))
+        self.buttons.append(Button(text, callback, self.am))
 
     def focus_enter(self) -> None:
         """Trigger the callback of the currently focused button."""
@@ -160,9 +169,7 @@ class Menu(Scene, ABC):
         """
         y_offset = 0
         for btn in self.buttons:
-            btn.draw(
-                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset
-            )
+            btn.draw(self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset)
             y_offset += btn.h + y_pad
         return y + y_offset
 
@@ -172,14 +179,13 @@ class Menu(Scene, ABC):
         x: X-coordinate of the menu.
         y: Y-coordinate of the menu.
         """
-        self.canvas.draw_to_window(self.game.win_ptr, x, y)
+        self.canvas.draw_to_window(x, y)
 
 
 class MovingEntity:
     """Base class for all moving entities in the game.
 
     Attributes:
-        game: Game instance.
         gw: width of the maze grid.
         gh: height of the maze grid.
         curr_cell: current cell position.
@@ -196,19 +202,17 @@ class MovingEntity:
 
     CELL_SIZE = 32
 
-    def __init__(
-        self, game: MLXApp, start_cell: tuple[int, int], speed: int
-    ) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, start_cell: tuple[int, int], speed: int) -> None:
         """Initialize the moving entity.
 
         Args:
-            game: Game instance.
             start_cell: Starting cell position.
             speed: Speed of the entity.
         """
-        self.game = game
-        self.gw = len(game.maze.grid[0]) - 1
-        self.gh = len(game.maze.grid) - 1
+        self.maze = maze
+        self.am = am
+        self.gw = len(maze.grid[0]) - 1
+        self.gh = len(maze.grid) - 1
         self.curr_cell = start_cell
 
         self.x = self.curr_cell[0] * 32
@@ -220,7 +224,7 @@ class MovingEntity:
         self.next_dx = 0
         self.next_dy = 0
 
-        self.curr_state = 'left'
+        self.curr_state = "left"
         self.animations: dict[str, AnimatedSprite] = {}
 
     def _add_animation(self, state: str, animation: AnimatedSprite) -> None:
@@ -235,7 +239,7 @@ class MovingEntity:
         """
         if gx < 0 or gx >= self.gw or gy < 0 or gy >= self.gh:
             return False
-        return bool(self.game.maze.grid[gy][gx] == 0)
+        return bool(self.maze.grid[gy][gx] == 0)
 
     def _update_direction(self, new_dx: int, new_dy: int) -> None:
         """Update the entity's direction and state based on the new direction.
@@ -263,7 +267,7 @@ class MovingEntity:
     def at_tile_center(self) -> None:
         """Override to handle when the entity reaches the center of a tile."""
 
-    def move(self) -> None:
+    def move(self, dt: float) -> None:
         """Move the entity's position and state.
 
         Based on the current direction and speed, it moves the entity along the
@@ -302,10 +306,10 @@ class MovingEntity:
             remaining_steps -= 1
 
         if self.curr_state in self.animations:
-            self.animations[self.curr_state].update(self.game.dt)
+            self.animations[self.curr_state].update(dt)
 
     def draw(self) -> None:
         """Draw the entity to the window."""
         self.animations[self.curr_state].draw_to_window(
-            self.game.win_ptr, self.x, self.y + self.game.maze.y_offset
+            self.x, self.y + self.maze.y_offset
         )

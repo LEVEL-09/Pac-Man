@@ -4,29 +4,31 @@ from mlx_wrapper import MLXApp
 
 from pacman.base import Scene
 from pacman.menus import MainMenu
+from pacman.parser import Config
+from pacman.scenes import EndScene
 
 
 class Game(MLXApp):
     """Entry point for the Pac-Man game.
 
     Attributes:
-        am: game's asset manager.
+        config: game parsed configuration from the config file.
 
     """
 
-    def __init__(self, width: int, height: int, title: str) -> None:
-        """Initialize the game.
-
-        Args:
-            width: width of the game window.
-            height: height of the game window.
-            title: title of the game window.
-        """
-        super().__init__(width, height, title)
+    def __init__(self) -> None:
+        """Initialize the game."""
+        self.config = Config()
+        super().__init__(
+            (self.config.maze_width * 2 + 1) * 32,
+            (self.config.maze_height * 2 + 1) * 32,
+            "Pac-Man",
+        )
+        Scene.set_game(self)
 
         # Scene stack
         self._scene_stack: list[Scene] = []
-        self.push_scene(MainMenu(self))
+        self.push_scene(EndScene(True))
 
     @property
     def _current_scene(self) -> Scene | None:
@@ -41,7 +43,7 @@ class Game(MLXApp):
         """Push a scene onto the stack.
 
         Args:
-            scene (Scene): The scene to push.
+            scene: The scene to push.
         """
         if self._current_scene:
             self._current_scene.unmount()
@@ -61,7 +63,7 @@ class Game(MLXApp):
         """Switch to a new scene completely replacing the current one.
 
         Args:
-            new_scene (Scene): The scene to switch to.
+            new_scene: The scene to switch to.
         """
         if self._current_scene:
             self._current_scene.unmount()

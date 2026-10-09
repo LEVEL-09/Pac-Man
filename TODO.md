@@ -1,3 +1,4 @@
+PRIORITY: add win_ptr to `Asset` Context in mlx_wrapper `asset/base.py`
 1. Branch: feature/gameplay-scene (DONE)
 2. Move `asset_manager` to `Scene` base class for simplicity (DONE)
 3. expose `get_config_attr` to `Scene` base class for easy access to config attributes (DONE)

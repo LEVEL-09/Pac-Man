@@ -129,7 +129,7 @@ class Keyboard:
         buffer: The buffer of characters typed by the user.
     """
 
-    def __init__(self, game: MLXApp, x: int, y: int, text_limit: int) -> None:
+    def __init__(self, game: MLXApp, am: AssetManager, x: int, y: int, text_limit: int) -> None:
         """Initialize the keyboard with the given game instance and position.
 
         Args:
@@ -142,8 +142,8 @@ class Keyboard:
         self.x, self.y = x, y
         self.text_limit = text_limit
 
-        self.font_med = self.game.am.get_font('minecraft_medium')
-        self.font_sm = self.game.am.get_font('minecraft_small')
+        self.font_med = am.get_font('minecraft_medium')
+        self.font_sm = am.get_font('minecraft_small')
         char_width = self.font_med['m'][1]
         char_height = self.font_med.atlas.height
         self.pad = 8

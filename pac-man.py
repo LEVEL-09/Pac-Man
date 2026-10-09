@@ -9,4 +9,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    Game(15, 12, "Pac-Man").start()
+    Game().start()
