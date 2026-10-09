@@ -1,6 +1,6 @@
 """Pac-Man player character."""
 
-from mlx_wrapper import MLXApp, Sprite
+from mlx_wrapper import KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_UP, MLXApp, Sprite
 
 from pacman.base import MovingEntity
 from pacman.hitbox import Hitbox
@@ -39,6 +39,11 @@ class Player(MovingEntity):
         self._add_animation(
             "appear", game.am.get_animated_sprite("pac_appear"))
         self.animations[self.curr_state].play()
+
+        game.bind_key(KEY_UP, self.move_up)
+        game.bind_key(KEY_DOWN, self.move_down)
+        game.bind_key(KEY_LEFT, self.move_left)
+        game.bind_key(KEY_RIGHT, self.move_right)
 
         self.blank = Sprite.blank(32, 32)
         self.blank.fill(0xFF000000)

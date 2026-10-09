@@ -1,12 +1,9 @@
 """In-game menus, including the main menu and its buttons."""
 
-from mlx_wrapper import MLXApp, KEY_ENTER, KEY_ESCAPE, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT
+from mlx_wrapper import KEY_ENTER, MLXApp
 
 from pacman.base import Menu, Scene
 from pacman.ui import Keyboard
-from src.pacman.ghost import Blinky, Clyde, Inky, Pinky
-from src.pacman.maze import Maze
-from src.pacman.player import Player
 
 
 class MainMenu(Menu):
@@ -141,77 +138,3 @@ class EndScene(Scene):
             y: Y coordinate.
         """
         self.canvas.draw_to_window(self.game.win_ptr, 0, 0)
-
-
-class LevelScene(Scene):
-    """Level scene."""
-
-    def __init__(self, game: MLXApp) -> None:
-        """Initialize the level scene.
-
-        Args:
-            game: Game instance.
-        """
-        super().__init__(game)
-
-        self.maze = Maze(self.game, self.game.width, self.game.height, 42, self._current_level)
-        self.score = 0
-
-        self._current_level = 0
-
-        self._next_level()
-        self._spawn_pacman()
-        self._spawn_ghosts()
-
-    def mount(self) -> None:
-        """Mount the level scene."""
-        self.game.bind_key(KEY_ESCAPE, self._pause)
-        self.game.bind_key(KEY_UP, self.pacman.move_up)
-        self.game.bind_key(KEY_DOWN, self.pacman.move_down)
-        self.game.bind_key(KEY_LEFT, self.pacman.move_left)
-        self.game.bind_key(KEY_RIGHT, self.pacman.move_right)
-
-    def unmount(self) -> None:
-        """Unmount the level scene."""
-        self.game.unbind_key(KEY_ESCAPE)
-        self.game.unbind_key(KEY_UP)
-        self.game.unbind_key(KEY_DOWN)
-        self.game.unbind_key(KEY_LEFT)
-        self.game.unbind_key(KEY_RIGHT)
-
-    def _pause(self) -> None:
-        """Pause the level scene."""
-        # self.game.push_scene(PauseScene(self.game))
-
-    def _next_level(self) -> None:
-        """Go to the next level."""
-        self._current_level += 1
-        self.maze.create_maze_sprite(self._current_level)
-
-    def _spawn_pacman(self) -> None:
-        """Spawn Pac-Man."""
-        self.pacman = Player(self.game)
-
-    def _spawn_ghosts(self) -> None:
-        """Spawn ghosts."""
-        self.ghosts = [
-            Blinky(self.game),
-            Pinky(self.game),
-            Inky(self.game),
-            Clyde(self.game)
-        ]
-
-    def _check_collisions(self) -> None:
-        """Check for collisions."""
-
-    def _check_win(self) -> None:
-        """Check for win."""
-
-    def update(self) -> None:
-        """Update the level scene."""
-
-    def _draw_hud(self) -> None:
-        """Draw the HUD."""
-
-    def draw(self, x: int, y: int) -> None:
-        """Draw the level scene."""
