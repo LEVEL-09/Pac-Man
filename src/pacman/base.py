@@ -2,7 +2,7 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import Any, Callable
 
 import numpy as np
 from mlx_wrapper import (
@@ -10,6 +10,7 @@ from mlx_wrapper import (
     KEY_ENTER,
     KEY_UP,
     AnimatedSprite,
+    AssetManager,
     MLXApp,
     Sprite,
 )
@@ -26,6 +27,7 @@ class Scene(ABC):
         game: Game instance.
         """
         self.game = game
+        self.am = AssetManager("./assets.xml")
         self.canvas = Sprite.blank(game.width, game.height)
         self.canvas.fill(0xFF180000)
         self.buttons: list[Button] = []
@@ -33,6 +35,10 @@ class Scene(ABC):
         self._stars = np.random.randint(
             low=[0, 0], high=[game.width, game.height], size=(300, 2)
         )
+
+    def get_config_attr(self, attr: str) -> Any:
+        """Get a configuration attribute."""
+        return getattr(self.game.config, attr)
 
     @abstractmethod
     def mount(self) -> None:
