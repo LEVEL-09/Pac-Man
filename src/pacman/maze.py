@@ -10,7 +10,7 @@ import random
 from enum import Enum, auto
 
 from mazegenerator import MazeGenerator
-from mlx_wrapper import AssetManager, MLXApp, Sprite
+from mlx_wrapper import AssetManager, Sprite
 
 
 class PacGumType(Enum):
@@ -41,7 +41,7 @@ class Maze:
 
     def __init__(
         self,
-        game: MLXApp,
+        win_height: int,
         am: AssetManager,
         width: int,
         height: int,
@@ -51,18 +51,18 @@ class Maze:
         """Initialize the maze generator and derive per-level seeds.
 
         Args:
-            game: The game instance.
+            win_height: Height of the window.
+            am: Asset manager instance.
             width: The maze width, in cells.
             height: The maze height, in cells.
             seed: The top-level seed used to deterministically derive
                 one seed per level.
             levels_number: The number of levels to generate seeds for.
         """
-        self.game = game
         self.am = am
         self.width = width
         self.height = height
-        self.y_offset = (game.height - (self.height * 2 + 1) * 32) // 2
+        self.y_offset = (win_height - (self.height * 2 + 1) * 32) // 2
         self.maze_generator = MazeGenerator(size=(width, height))
 
         random.seed(seed)
@@ -75,6 +75,10 @@ class Maze:
         self.create_maze_sprite(0)
 
         self.collectibles: dict[tuple[int, int], PacGumType]
+
+        self.path_canvas = Sprite.blank(
+            self.canvas.width, self.canvas.height
+        )
 
     def create_maze_sprite(self, level: int) -> None:
         """Generate a level's maze and compose it into a single sprite.

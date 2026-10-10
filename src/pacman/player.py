@@ -11,16 +11,16 @@ class Player(MovingEntity):
     """Represents the player character in the game.
 
     Attributes:
-        hitbox (Hitbox): hitbox of the player.
-        curr_state (str): current state of the player.
-        animations (dict[str, AnimatedSprite]): animations of the player.
+        hitbox: Hitbox for the player.
     """
 
-    def __init__(self, maze: Maze, am: AssetManager, speed: int) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, speed: int) -> None:
         """Initialize the player character.
 
         Args:
-            game (Game): Game instance.
+            am: AssetManager instance.
+            maze: Maze instance.
+            speed: Movement speed of the player.
         """
         gw = len(maze.grid[0]) - 1
         gh = len(maze.grid) - 1
@@ -31,7 +31,7 @@ class Player(MovingEntity):
         super().__init__(am, maze, start_cell, speed)
         self.hitbox = Hitbox(3, 4, 24, 24)
 
-        self.curr_state = "appear"
+        self.animation_key = "appear"
         self._add_animation("up", self.am.get_animated_sprite("pac_up"))
         self._add_animation("down", self.am.get_animated_sprite("pac_down"))
         self._add_animation("left", self.am.get_animated_sprite("pac_left"))
@@ -40,7 +40,7 @@ class Player(MovingEntity):
         self._add_animation(
             "appear", self.am.get_animated_sprite("pac_appear")
         )
-        self.animations[self.curr_state].play()
+        self.animations[self.animation_key].play()
 
         self.blank = Sprite.blank(32, 32)
         self.blank.fill(0xFF000000)
@@ -60,10 +60,10 @@ class Player(MovingEntity):
     def update(self, dt: float) -> None:
         """Update the player's position and state."""
         if not self.animations['appear'].is_finished:
-            self.animations[self.curr_state].update(dt)
+            self.animations[self.animation_key].update(dt)
             return
 
-        super().move(dt)
+        self.move(dt)
 
     def move_up(self) -> None:
         """Set the player's next direction to move up."""

@@ -1,67 +1,132 @@
 """Module containing base classes for the game."""
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
-from mlx_wrapper import (
-    KEY_DOWN,
-    KEY_ENTER,
-    KEY_UP,
-    AnimatedSprite,
-    AssetManager,
-    Sprite,
-)
+from mlx_wrapper import AnimatedSprite, AssetManager, Sprite
 
 from pacman.maze import Maze
-from pacman.ui import Button
+from pacman.parser import Config
 
 if TYPE_CHECKING:
     from pacman.game import Game
 
 
-class Scene(ABC):
-    """Base class for all scenes in the game."""
+class GameContext:
+    """App-wide services shared by scenes/components.
 
-    _game: ClassVar[Game | None] = None
+    Should be set before any scene is initialized.
+
+    Attributes:
+        game: Game instance.
+        am: Asset manager.
+        config: Game configuration.
+    """
+
+    _current: ClassVar[GameContext | None] = None
+
+    def __init__(self, game: Game, am: AssetManager, config: Config) -> None:
+        """Initialize the game context.
+
+        Args:
+            game: The game instance.
+            am: The asset manager.
+            config: The game configuration.
+        """
+        self.game = game
+        self.am = am
+        self.config = config
+
+    @classmethod
+    def set_context(cls, context: GameContext) -> None:
+        """Set the current game context.
+
+        Args:
+            context: Game context to set.
+        """
+        cls._current = context
+
+    @classmethod
+    def get_context(cls) -> GameContext:
+        """Get the current game context.
+
+        Returns:
+            The current game context.
+
+        Raises:
+            RuntimeError: If no game context is set.
+        """
+        if cls._current is None:
+            raise RuntimeError("No game context is set.")
+        return cls._current
+
+
+class StarField:
+    """Animated background of moving stars."""
+
+    def __init__(self, width: int, height: int, count: int = 300) -> None:
+        """Initialize the star field.
+
+        Args:
+            width: Width of the canvas.
+            height: Height of the canvas.
+            count: Number of stars to generate.
+        """
+        self._stars = np.random.randint(
+            low=[0, 0], high=[width, height], size=(count, 2)
+        )
+
+    def draw(self, canvas: Sprite) -> None:
+        """Draw the stars on the given canvas.
+
+        Args:
+            canvas: Canvas to draw on.
+        """
+        self._stars += 1
+        self._stars[:, 0] %= canvas.width
+        self._stars[:, 1] %= canvas.height
+        canvas.fill(0xFF080000)
+
+        star_size = 2
+        for x, y in self._stars:
+            canvas.pixels[y: y + star_size, x: x + star_size] = 0xFFFFFFFF
+
+
+class Scene(ABC):
+    """Base class for all scenes in the game.
+
+    Attributes:
+        ctx: game context.
+        canvas: canvas to draw on.
+    """
+
+    USE_STARFIELD: ClassVar[bool] = True
 
     def __init__(self) -> None:
         """Initialize the scene."""
-        self.game = self.get_game()
+        self.ctx = GameContext.get_context()
         self.canvas = Sprite.blank(self.game.width, self.game.height)
-        # Generate stars for the background
-        self._stars = np.random.randint(
-            low=[0, 0], high=[self.game.width, self.game.height], size=(300, 2)
+        # initialize starfield if enabled
+        self._starfield = (
+            StarField(self.game.width, self.game.height)
+            if self.USE_STARFIELD else None
         )
 
     @property
+    def game(self) -> Game:
+        """Game: game instance."""
+        return self.ctx.game
+
+    @property
     def am(self) -> AssetManager:
-        """Get the asset manager."""
-        return self.game.am
+        """AssetManager: asset manager."""
+        return self.ctx.am
 
-    @classmethod
-    def set_game(cls, game: Game) -> None:
-        """Set the global game context variable."""
-        Scene._game = game
-
-    @classmethod
-    def get_game(cls) -> Game:
-        """Get the global game context variable.
-
-        Returns:
-            MLXApp: The global game context variable.
-
-        Raises:
-            ValueError: If the game is not initialized.
-        """
-        if Scene._game is None:
-            raise ValueError(
-                "Game not initialized call Scene.set_game() first!")
-        return Scene._game
-
-    def get_config_attr(self, attr: str) -> Any:
-        """Get a configuration attribute."""
-        return getattr(self.game.config, attr)
+    @property
+    def config(self) -> Config:
+        """Config: game configuration."""
+        return self.ctx.config
 
     @abstractmethod
     def mount(self) -> None:
@@ -75,120 +140,16 @@ class Scene(ABC):
     def update(self) -> None:
         """Update the scene."""
 
-    @abstractmethod
-    def draw(self, x: int, y: int) -> None:
-        """Draw the scene.
-
-        x: X-coordinate to draw the scene.
-        y: Y-coordinate to draw the scene.
-        """
-
-    def draw_stars(self) -> None:
-        """Draw a background animation of moving stars."""
-        self._stars += 1
-        self._stars[:, 0] %= self.canvas.width
-        self._stars[:, 1] %= self.canvas.height
-        self.canvas.fill(0xFF080000)
-
-        star_size = 2
-        for x, y in self._stars:
-            x_end = min(x + star_size, self.canvas.width)
-            y_end = min(y + star_size, self.canvas.height)
-            self.canvas.pixels[y:y_end, x:x_end] = 0xFFFFFFFF
-
-
-class Menu(Scene, ABC):
-    """Abstract base class for menus.
-
-    Attributes:
-        buttons: List of buttons in the menu.
-        current_btn: Index of the currently focused button.
-
-    """
-
-    def __init__(self) -> None:
-        """Initialize the menu with the given MLX application and dimensions.
-        """
-        super().__init__()
-        self.buttons: list[Button] = []
-        self.current_btn = -1
-
-    def mount(self) -> None:
-        """Mount the main menu, making it active and visible."""
-        self.game.bind_key(KEY_DOWN, self.focus_next)
-        self.game.bind_key(KEY_UP, self.focus_prev)
-        self.game.bind_key(KEY_ENTER, self.focus_enter)
-
-    def unmount(self) -> None:
-        """Unmouount the main menu, making it inactive and invisible."""
-        self.game.unbind_key(KEY_DOWN)
-        self.game.unbind_key(KEY_UP)
-        self.game.unbind_key(KEY_ENTER)
-
-    @abstractmethod
-    def update(self) -> None:
-        """Update the menu state."""
-
-    def add_button(self, text: str, callback: Callable[..., None]) -> None:
-        """Add a button to the menu.
-
-        Args:
-            text: The text to display on the button.
-            callback: The function to call when the
-                button is clicked.
-        """
-        self.buttons.append(Button(text, callback, self.am))
-
-    def focus_enter(self) -> None:
-        """Trigger the callback of the currently focused button."""
-        if self.current_btn != -1:
-            self.buttons[self.current_btn].on_click()
-
-    def focus_next(self) -> None:
-        """Move focus to the next button."""
-        if self.current_btn == -1:
-            self.current_btn = 0
+    def draw_starfield(self) -> None:
+        """Draw the starfield."""
+        if self._starfield:
+            self._starfield.draw(self.canvas)
         else:
-            self.buttons[self.current_btn].focused = False
-            self.current_btn = (self.current_btn + 1) % len(self.buttons)
-        self.buttons[self.current_btn].focused = True
+            self.canvas.fill(0xFF000000)
 
-    def focus_prev(self) -> None:
-        """Move focus to the previous button."""
-        if self.current_btn == -1:
-            self.current_btn = len(self.buttons) - 1
-        else:
-            self.buttons[self.current_btn].focused = False
-            self.current_btn = (self.current_btn - 1) % len(self.buttons)
-        self.buttons[self.current_btn].focused = True
-
-    def draw_buttons(self, y: int, y_pad: int) -> int:
-        """Draw all buttons on the canvas.
-
-        Args:
-            y: Starting y-coordinate for the first button.
-            y_pad: Padding between buttons.
-
-        Returns:
-            int: The final y-coordinate after drawing all buttons.
-        """
-        y_offset = 0
-        for btn in self.buttons:
-            btn.draw(
-                self.canvas,
-                (self.canvas.width - btn.w) // 2,
-                y + y_offset
-            )
-            y_offset += btn.h + y_pad
-        return y + y_offset
-
-    def draw(self, x: int, y: int) -> None:
-        """Draw the menu to the window.
-
-        x: X-coordinate of the menu.
-        y: Y-coordinate of the menu.
-        """
-        self.canvas.draw_to_window(x, y)
+    def draw(self) -> None:
+        """Draw the scene."""
+        self.canvas.draw_to_window(0, 0)
 
 
 class MovingEntity:
@@ -196,7 +157,6 @@ class MovingEntity:
 
     Attributes:
         maze: Maze instance.
-        player: Player instance.
         gw: width of the maze grid.
         gh: height of the maze grid.
         curr_cell: current cell position.
@@ -211,6 +171,7 @@ class MovingEntity:
         animations: Animations of the entity.
     """
 
+    DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
     CELL_SIZE = 32
 
     def __init__(
@@ -243,18 +204,20 @@ class MovingEntity:
         self.next_dx = 0
         self.next_dy = 0
 
-        self.curr_state = 'left'
+        self.animation_key = 'left'
         self.animations: dict[str, AnimatedSprite] = {}
 
-    def _add_animation(self, state: str, animation: AnimatedSprite) -> None:
+    def _add_animation(self, key: str, animation: AnimatedSprite) -> None:
         """Add an animation to the entity's animations dictionary.
 
         Args:
             state: State name for the animation.
             animation: AnimatedSprite to add.
         """
-        self.animations[state] = animation
+        self.animations[key] = animation
 
+    # TODO: This belongs to maze and should compute
+    # walkable cells at init and query from there
     def _is_walkable(self, gx: int, gy: int) -> bool:
         """Whether the given grid position is walkable.
 
@@ -276,21 +239,21 @@ class MovingEntity:
             new_dx: new x direction.
             new_dy: new y direction.
         """
-        old_state = self.curr_state
+        old_state = self.animation_key
         self.dx = new_dx
         self.dy = new_dy
 
         if self.dx == 1:
-            self.curr_state = 'right'
+            self.animation_key = 'right'
         elif self.dx == -1:
-            self.curr_state = 'left'
+            self.animation_key = 'left'
         elif self.dy == 1:
-            self.curr_state = 'down'
+            self.animation_key = 'down'
         elif self.dy == -1:
-            self.curr_state = 'up'
+            self.animation_key = 'up'
 
-        if old_state != self.curr_state:
-            self.animations[self.curr_state].play()
+        if old_state != self.animation_key:
+            self.animations[self.animation_key].play()
 
     def at_tile_center(self) -> None:
         """Override to handle when the entity reaches the center of a tile."""
@@ -325,19 +288,19 @@ class MovingEntity:
                     self.curr_cell[0] + self.dx,
                     self.curr_cell[1] + self.dy,
                 ):
-                    if self.curr_state in self.animations:
-                        self.animations[self.curr_state].stop()
+                    if self.animation_key in self.animations:
+                        self.animations[self.animation_key].stop()
                     break
 
             self.x += self.dx
             self.y += self.dy
             remaining_steps -= 1
 
-        if self.curr_state in self.animations:
-            self.animations[self.curr_state].update(dt)
+        if self.animation_key in self.animations:
+            self.animations[self.animation_key].update(dt)
 
     def draw(self) -> None:
         """Draw the entity to the window."""
-        self.animations[self.curr_state].draw_to_window(
+        self.animations[self.animation_key].draw_to_window(
             self.x, self.y + self.maze.y_offset
         )

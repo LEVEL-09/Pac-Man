@@ -2,7 +2,7 @@
 
 from mlx_wrapper import AssetManager, MLXApp
 
-from pacman.base import Scene
+from pacman.base import GameContext, Scene
 from pacman.menus import MainMenu
 from pacman.parser import Config
 
@@ -18,14 +18,14 @@ class Game(MLXApp):
 
     def __init__(self) -> None:
         """Initialize the game."""
-        self.config = Config()
+        config = Config()
         super().__init__(
-            (self.config.maze_width * 2 + 1) * 32,
-            (self.config.maze_height * 2 + 1) * 32,
+            (config.maze_width * 2 + 1) * 32,
+            (config.maze_height * 2 + 1) * 32,
             "Pac-Man",
         )
-        self.am = AssetManager("./assets.xml")
-        Scene.set_game(self)
+        am = AssetManager("./assets.xml")
+        GameContext.set_context(GameContext(self, am, config))
 
         # Scene stack
         self._scene_stack: list[Scene] = []
@@ -84,4 +84,4 @@ class Game(MLXApp):
         """Update the current scene."""
         if self._current_scene:
             self._current_scene.update()
-            self._current_scene.draw(0, 0)
+            self._current_scene.draw()

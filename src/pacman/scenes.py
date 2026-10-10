@@ -19,21 +19,19 @@ from pacman.ui import Keyboard
 class GamePlayScene(Scene):
     """Game play scene."""
 
-    def __init__(self) -> None:
-        """Initialize the level scene.
+    USE_STARFIELD = False
 
-        Args:
-            game: Game instance.
-        """
+    def __init__(self) -> None:
+        """Initialize the level scene."""
         super().__init__()
         self._current_level = 0
         self.score = 0
         self.maze = Maze(
-            game=self.game,
+            win_height=self.game.height,
             am=self.am,
-            width=self.get_config_attr('maze_width'),
-            height=self.get_config_attr('maze_height'),
-            seed=self.get_config_attr('maze_seed'),
+            width=self.config.maze_width,
+            height=self.config.maze_height,
+            seed=self.config.maze_seed,
             levels_number=10
         )
 
@@ -67,15 +65,15 @@ class GamePlayScene(Scene):
 
     def _spawn_player(self) -> None:
         """Spawn Pac-Man."""
-        self.player = Player(self.maze, self.am, 4)
+        self.player = Player(self.am, self.maze, 4)
 
     def _spawn_ghosts(self) -> None:
         """Spawn ghosts."""
         self.ghosts = [
-            Blinky(self.player, self.am, self.maze),
-            Pinky(self.player, self.am, self.maze),
-            Inky(self.player, self.am, self.maze),
-            Clyde(self.player, self.am, self.maze)
+            Blinky(self.am, self.maze, self.player),
+            Pinky(self.am, self.maze, self.player),
+            Inky(self.am, self.maze, self.player),
+            Clyde(self.am, self.maze, self.player)
         ]
 
     def _check_collisions(self) -> None:
@@ -87,18 +85,21 @@ class GamePlayScene(Scene):
     def update(self) -> None:
         """Update the level scene."""
         self.player.update(self.game.dt)
+        self.maze.path_canvas.fill(0)
         for ghost in self.ghosts:
             ghost.update(self.game.dt)
+            ghost.draw_path()
 
     def _draw_hud(self) -> None:
         """Draw the HUD."""
 
-    def draw(self, x: int, y: int) -> None:
+    def draw(self) -> None:
         """Draw the level scene."""
         self.maze.draw()
         self.player.draw()
         for ghost in self.ghosts:
             ghost.draw()
+        self.maze.path_canvas.draw_to_window(0, self.maze.y_offset)
 
 
 class EndScene(Scene):
@@ -120,7 +121,7 @@ class EndScene(Scene):
             self.title = self.am.get_sprite("win")
         else:
             self.title = self.am.get_sprite("game_over")
-        self.keyboard = Keyboard(self.game, self.am, 0, 0, text_limit=30)
+        self.keyboard = Keyboard(self.ctx, 0, 0, 30)
         self.keyboard.x = (self.game.width - self.keyboard.width) // 2
         self.keyboard.y = (self.game.height - self.title.height) // 2
 
@@ -140,7 +141,7 @@ class EndScene(Scene):
 
     def update(self) -> None:
         """Update the end scene."""
-        self.draw_stars()
+        self.draw_starfield()
         self.title.blit(
             self.canvas, (self.canvas.width - self.title.width) // 2, 50
         )
@@ -179,12 +180,3 @@ class EndScene(Scene):
                 self.keyboard.y - self.font.atlas.height - 50,
                 0xFFFFFFFF
             )
-
-    def draw(self, x: int, y: int) -> None:
-        """Draw the end scene.
-
-        Args:
-            x: X coordinate.
-            y: Y coordinate.
-        """
-        self.canvas.draw_to_window(0, 0)

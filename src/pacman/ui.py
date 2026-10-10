@@ -9,9 +9,10 @@ from mlx_wrapper import (
     KEY_SPACE,
     KEY_UP,
     AssetManager,
-    MLXApp,
     Sprite,
 )
+
+from pacman.base import GameContext
 
 
 class Button:
@@ -37,7 +38,7 @@ class Button:
         title: str,
         callback: Callable[..., None],
         am: AssetManager,
-        focused: bool = False
+        focused: bool = False,
     ) -> None:
         """Initialize the button with a title, callback, and asset manager.
 
@@ -68,9 +69,11 @@ class Button:
         am.get_sprite("btn_focused_start").blit(self.states[True], 0, 0)
         for _ in range(1, mid_segments + 1):
             am.get_sprite("btn_unfocused_mid").blit(
-                self.states[False], _ * slice_w, 0)
+                self.states[False], _ * slice_w, 0
+            )
             am.get_sprite("btn_focused_mid").blit(
-                self.states[True], _ * slice_w, 0)
+                self.states[True], _ * slice_w, 0
+            )
         am.get_sprite("btn_unfocused_end").blit(
             self.states[False], self.w - slice_w, 0)
         am.get_sprite("btn_focused_end").blit(
@@ -116,65 +119,61 @@ class Keyboard:
     """In-game keyboard for typing characters.
 
     Attributes:
-        game: The game instance.
-        x: The x-coordinate of the keyboard.
-        y: The y-coordinate of the keyboard.
-        font: The font used for rendering characters.
-        square_size: The size of each character square.
-        width: The width of the keyboard.
-        height: The height of the keyboard.
-        layouts: A dictionary of keyboard layouts (lowercase and uppercase).
-        row: The current row of the focused key.
-        col: The current column of the focused key.
-        buffer: The buffer of characters typed by the user.
+        ctx: Game context.
+        x: X-coordinate of the keyboard.
+        y: Y-coordinate of the keyboard.
+        font: Font used for rendering characters.
+        square_size: Size of each character square.
+        width: Width of the keyboard.
+        height: Height of the keyboard.
+        layouts: dictionary of keyboard layouts (lowercase and uppercase).
+        row: Current row of the focused key.
+        col: Current column of the focused key.
+        buffer: Buffer of characters typed by the user.
     """
 
     def __init__(
-        self,
-        game: MLXApp,
-        am: AssetManager,
-        x: int,
-        y: int,
-        text_limit: int,
+        self, ctx: GameContext, x: int, y: int, text_limit: int
     ) -> None:
         """Initialize the keyboard with the given game instance and position.
 
         Args:
-            game: game instance.
+            ctx: Game context.
             x: X-coordinate of the keyboard.
             y: Y-coordinate of the keyboard.
             text_limit: maximum number of characters allowed in the buffer.
         """
-        self.game = game
+        self.game = ctx.game
         self.x, self.y = x, y
         self.text_limit = text_limit
 
-        self.font_med = am.get_font('minecraft_medium')
-        self.font_sm = am.get_font('minecraft_small')
-        char_width = self.font_med['m'][1]
+        self.font_med = ctx.am.get_font("minecraft_medium")
+        self.font_sm = ctx.am.get_font("minecraft_small")
+        char_width = self.font_med["m"][1]
         char_height = self.font_med.atlas.height
         self.pad = 8
         self.margin = 5
         self.border = 3
 
-        self.square_size = max(char_width, char_height) + \
-            (self.margin + self.border) * 2
+        self.square_size = (
+            max(char_width, char_height) + (self.margin + self.border) * 2
+        )
         self.width = (self.square_size + self.pad) * 10 - self.pad
-        self.height = (self.square_size + self.pad) * 4 + \
+        self.height = (
+            (self.square_size + self.pad) * 4 +
             self.font_sm.atlas.height * 2 + self.pad
+        )
 
         self.layouts = {
             True: Sprite.blank(self.width, self.height),
-            False: Sprite.blank(self.width, self.height)
+            False: Sprite.blank(self.width, self.height),
         }
 
         # Characters for lowercase and uppercase layouts
         self._chars_lc = [
-            "0123456789", "qwertyuiop", "↑asdfghjkl", "zxcvbnm–←"
-        ]
+            "0123456789", "qwertyuiop", "↑asdfghjkl", "zxcvbnm–←"]
         self._chars_uc = [
-            "0123456789", "QWERTYUIOP", "↑ASDFGHJKL", "ZXCVBNM–←"
-        ]
+            "0123456789", "QWERTYUIOP", "↑ASDFGHJKL", "ZXCVBNM–←"]
 
         # Whether the caps lock is on
         self._caps_lock = False
@@ -216,7 +215,8 @@ class Keyboard:
             for char in chars:
                 self._draw_char(self.layouts[False], char, x, y, 0x7FFFFFFF)
                 self._draw_char(
-                    self.layouts[True], char.upper(), x, y, 0x7FFFFFFF)
+                    self.layouts[True], char.upper(), x, y, 0x7FFFFFFF
+                )
                 x += self.square_size + self.pad
             y += self.square_size + self.pad
         instructions = [
@@ -226,27 +226,31 @@ class Keyboard:
         self.font_sm.draw_text(
             self.layouts[True],
             instructions[0],
-            (self.width - self.font_sm.measure_text(instructions[0])) // 2, y,
-            0xFFFFFFFF
+            (self.width - self.font_sm.measure_text(instructions[0])) // 2,
+            y,
+            0xFFFFFFFF,
         )
         self.font_sm.draw_text(
             self.layouts[False],
             instructions[0],
-            (self.width - self.font_sm.measure_text(instructions[0])) // 2, y,
-            0xFFFFFFFF
+            (self.width - self.font_sm.measure_text(instructions[0])) // 2,
+            y,
+            0xFFFFFFFF,
         )
         y += self.font_sm.atlas.height + self.pad
         self.font_sm.draw_text(
             self.layouts[True],
             instructions[1],
-            (self.width - self.font_sm.measure_text(instructions[1])) // 2, y,
-            0xFFFFFFFF
+            (self.width - self.font_sm.measure_text(instructions[1])) // 2,
+            y,
+            0xFFFFFFFF,
         )
         self.font_sm.draw_text(
             self.layouts[False],
             instructions[1],
-            (self.width - self.font_sm.measure_text(instructions[1])) // 2, y,
-            0xFFFFFFFF
+            (self.width - self.font_sm.measure_text(instructions[1])) // 2,
+            y,
+            0xFFFFFFFF,
         )
 
     def _draw_char(
@@ -262,27 +266,28 @@ class Keyboard:
             color: the color to use for the character.
         """
         target.pixels[
-            y + self.border:y + self.square_size - self.border,
+            y + self.border: y + self.square_size - self.border,
             x: x + self.border
         ] = color
         target.pixels[
-            y + self.border:y + self.square_size - self.border,
-            x + self.square_size - self.border:x + self.square_size
+            y + self.border: y + self.square_size - self.border,
+            x + self.square_size - self.border: x + self.square_size
         ] = color
         target.pixels[
             y: y + self.border,
             x + self.border: x + self.square_size - self.border
         ] = color
         target.pixels[
-            y + self.square_size - self.border:y + self.square_size,
-            x + self.border:x + self.square_size - self.border
+            y + self.square_size - self.border: y + self.square_size,
+            x + self.border: x + self.square_size - self.border
         ] = color
 
         self.font_med.draw_text(
-            target, char,
+            target,
+            char,
             x + self.pad + self.border + self.margin,
             y + self.border + self.margin,
-            color
+            color,
         )
 
     # TODO: decide whether to keep draw or blit
@@ -291,7 +296,11 @@ class Keyboard:
         self.layouts[self._caps_lock].draw_to_window(self.x, self.y)
 
     def blit(self, target: Sprite) -> None:
-        """Blit the keyboard to the target sprite."""
+        """Blit the keyboard to the target sprite.
+
+        Args:
+            target: sprite to blit onto.
+        """
         self.layouts[self._caps_lock].blit(target, self.x, self.y)
 
     def _key_coords(self) -> tuple[int, int]:
@@ -302,17 +311,20 @@ class Keyboard:
         """
         return (
             self.col * (self.square_size + self.pad),
-            self.row * (self.square_size + self.pad)
+            self.row * (self.square_size + self.pad),
         )
 
     def _set_key_color(self, color: int) -> None:
-        """Set the color of the current key to the given color."""
+        """Set the color of the current key to the given color.
+
+        Args:
+            color: color to set the key to.
+        """
         x, y = self._key_coords()
         char = self._curr_layout()[self.row][self.col]
 
         self.layouts[self._caps_lock].pixels[
-            y: y + self.square_size,
-            x: x + self.square_size
+            y: y + self.square_size, x: x + self.square_size
         ] = 0
 
         self._draw_char(self.layouts[self._caps_lock], char, x, y, color)
@@ -347,13 +359,13 @@ class Keyboard:
         """Fill up the buffer with the current character."""
         char = self._curr_layout()[self.row][self.col]
 
-        if char == '↑':
+        if char == "↑":
             self._caps_lock = not self._caps_lock
             self._set_key_color(0xFFFFFFFF)
-        elif char == '←':
+        elif char == "←":
             self.buffer = self.buffer[:-1]
         elif len(self.buffer) < self.text_limit:
-            if char == '–':
-                self.buffer += ' '
+            if char == "–":
+                self.buffer += " "
             else:
                 self.buffer += char

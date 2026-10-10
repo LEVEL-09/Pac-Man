@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum, auto
 
-from mlx_wrapper import AssetManager, Sprite
+from mlx_wrapper import AssetManager
 
 from pacman.base import MovingEntity
 from pacman.hitbox import Hitbox
@@ -38,26 +38,23 @@ class Ghost(ABC, MovingEntity):
     define how the ghost selects its target cell while chasing.
 
     Attributes:
-        player: Player instance.
         am: AssetManager instance.
         maze: Maze instance.
-        hitbox (Hitbox): Collision hitbox of the ghost.
-        state (GhostState): Current behavioral state of the ghost.
-        target_cell (tuple[int, int]): Grid cell the ghost is pathing towards.
-        path (list[tuple[int, int]]): Sequence of cells from the ghost's
-            current position to its target cell.
-        path_color (int): Color used when visualizing the ghost's path.
-        drawable_path (Sprite): Blank sprite used to draw the visualized
-            path onto.
+        player: Player instance.
+        hitbox: Collision hitbox of the ghost.
+        state: Current behavioral state of the ghost.
+        target_cell: Grid cell the ghost is pathing towards.
+        path: Sequence of cells from the ghost's current position
+            to its target cell.
+        path_color: Color used when visualizing the ghost's path.
+        drawable_path: Blank sprite used to draw the visualized path onto.
     """
-
-    DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
 
     def __init__(
         self,
-        player: Player,
         am: AssetManager,
         maze: Maze,
+        player: Player,
         corner: tuple[int, int],
         speed: int,
         path_color: int,
@@ -81,9 +78,6 @@ class Ghost(ABC, MovingEntity):
         self.target_cell: tuple[int, int] = corner
         self.path: list[tuple[int, int]] = []
         self.path_color = path_color
-        self.drawable_path = Sprite.blank(
-            self.maze.canvas.width, self.maze.canvas.height
-        )
         self._add_animation('eaten', self.am.get_animated_sprite('eaten'))
         self._add_animation(
             'frightened', self.am.get_animated_sprite('frightened'))
@@ -96,6 +90,8 @@ class Ghost(ABC, MovingEntity):
         no longer valid (e.g. the next tile isn't adjacent), recomputes it
         via `find_path`.
         """
+        # TODO: recompute path only if target_cell changed
+        self.find_path()
         if self.path and self.path[0] == self.curr_cell:
             self.path.pop(0)
 
@@ -162,15 +158,13 @@ class Ghost(ABC, MovingEntity):
         """
         self.target_cell = target
 
-    def visualize_path(self) -> None:
+    def draw_path(self) -> None:
         """Draw the ghost's current path onto the maze for debugging.
 
         Renders a line segment between each pair of consecutive cells in
         `self.path` using `path_color`, then draws the result to the game
         window. Does nothing if the path has fewer than two cells.
         """
-        self.drawable_path.fill(0)
-
         if len(self.path) < 2:
             return
 
@@ -192,11 +186,9 @@ class Ghost(ABC, MovingEntity):
             min_y = min(y1, y2) - half_thickness
             max_y = max(y1, y2) + half_thickness
 
-            self.drawable_path.pixels[
+            self.maze.path_canvas.pixels[
                 min_y: max_y, min_x: max_x
             ] = self.path_color
-
-        self.drawable_path.draw_to_window(0, self.maze.y_offset)
 
     def scatter_mode(self) -> None:
         """Set the ghost's assigned corner as its target while scattering."""
@@ -258,19 +250,19 @@ class Ghost(ABC, MovingEntity):
         if (self.state == GhostState.CHASE
            or self.state == GhostState.SCATTER):
             if self.dx == 1:
-                self.curr_state = "right"
+                self.animation_key = "right"
             elif self.dx == -1:
-                self.curr_state = "left"
+                self.animation_key = "left"
             elif self.dy == 1:
-                self.curr_state = "down"
+                self.animation_key = "down"
             elif self.dy == -1:
-                self.curr_state = "up"
+                self.animation_key = "up"
         elif self.state == GhostState.EATEN:
-            self.curr_state = "eaten"
+            self.animation_key = "eaten"
         elif self.state == GhostState.FRIGHTENED:
-            self.curr_state = "frightened"
+            self.animation_key = "frightened"
 
-        self.animations[self.curr_state].play()
+        self.animations[self.animation_key].play()
 
     def update(self, dt: float) -> None:
         """Update the ghost for the current frame.
@@ -287,21 +279,13 @@ class Ghost(ABC, MovingEntity):
         elif self.state == GhostState.EATEN:
             self.eaten_mode()
 
-        self.find_path()
-        super().move(dt)
-
-    def draw(self) -> None:
-        """Draw the ghost to the window."""
-        # TODO: Check if path visualization is enabled in cheat mode then
-        # call `visualize_path` before drawing
-        self.visualize_path()
-        super().draw()
+        self.move(dt)
 
 
 class Blinky(Ghost):
     """Blinky ghost implementation."""
 
-    def __init__(self, player: Player, am: AssetManager, maze: Maze) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, player: Player) -> None:
         """Initialize Blinky with the given game instance.
 
         Args:
@@ -310,7 +294,7 @@ class Blinky(Ghost):
             maze: Maze instance.
         """
         super().__init__(
-            player, am, maze, (len(maze.grid[0]) - 2, 1), 3, 0x80FF0000,
+            am, maze, player, (len(maze.grid[0]) - 2, 1), 3, 0x80FF0000,
         )
 
         self._add_animation('up', self.am.get_animated_sprite('blinky_up'))
@@ -341,7 +325,7 @@ class Pinky(Ghost):
             direction.
     """
 
-    def __init__(self, player: Player, am: AssetManager, maze: Maze) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, player: Player) -> None:
         """Initialize Pinky with the given game instance.
 
         Args:
@@ -349,22 +333,22 @@ class Pinky(Ghost):
             am: AssetManager for loading assets.
             maze: Maze instance.
         """
-        super().__init__(player, am, maze, (1, 1), 3, 0x80FF00FF)
-        self.curr_state = "down"
+        super().__init__(am, maze, player, (1, 1), 3, 0x80FF00FF)
+        self.animation_key = "down"
         self._add_animation('up', self.am.get_animated_sprite('pinky_up'))
         self._add_animation('down', self.am.get_animated_sprite('pinky_down'))
         self._add_animation('left', self.am.get_animated_sprite('pinky_left'))
         self._add_animation(
             'right', self.am.get_animated_sprite('pinky_right')
         )
-        self.animations[self.curr_state].play()
+        self.animations[self.animation_key].play()
         self.arrows = {
             'up': self.am.get_sprite('pinky_arrow_up'),
             'down': self.am.get_sprite('pinky_arrow_down'),
             'left': self.am.get_sprite('pinky_arrow_left'),
             'right': self.am.get_sprite('pinky_arrow_right'),
         }
-        self.arrow = self.arrows[self.curr_state]
+        self.arrow = self.arrows[self.animation_key]
         for arrow in self.arrows.values():
             arrow.pixels[:] &= 0x80FFFFFF
 
@@ -376,16 +360,16 @@ class Pinky(Ghost):
         has no path or Pac-Man's direction is unrecognized.
         """
         if self.path:
-            if self.player.curr_state == "up":
+            if self.player.animation_key == "up":
                 x = self.player.curr_cell[0]
                 y = self.player.curr_cell[1] - 3
-            elif self.player.curr_state == "down":
+            elif self.player.animation_key == "down":
                 x = self.player.curr_cell[0]
                 y = self.player.curr_cell[1] + 3
-            elif self.player.curr_state == "left":
+            elif self.player.animation_key == "left":
                 x = self.player.curr_cell[0] - 3
                 y = self.player.curr_cell[1]
-            elif self.player.curr_state == "right":
+            elif self.player.animation_key == "right":
                 x = self.player.curr_cell[0] + 3
                 y = self.player.curr_cell[1]
             else:
@@ -396,41 +380,41 @@ class Pinky(Ghost):
             y = self.player.curr_cell[1]
         self.set_target((x, y))
 
-    def visualize_path(self) -> None:
+    def draw_path(self) -> None:
         """Draw the ghost's path and a directional arrow to the window.
 
         Draws the base path visualization, then overlays an arrow sprite
         pointing in the direction Pac-Man is currently facing, placed near
         Pinky's ambush target cell.
         """
-        super().visualize_path()
+        super().draw_path()
         if (
-            self.player.curr_state == "appear"
-            or self.player.curr_state == "up"
+            self.player.animation_key == "appear"
+            or self.player.animation_key == "up"
         ):
             y_offset = self.maze.y_offset - 112 + 16
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32
 
-            self.arrows["up"].draw_to_window(x, y)
-        elif self.player.curr_state == "down":
+            self.arrows["up"].blit(self.maze.path_canvas, x, y)
+        elif self.player.animation_key == "down":
             y_offset = self.maze.y_offset + 16
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32
 
-            self.arrows["down"].draw_to_window(x, y)
-        elif self.player.curr_state == "left":
+            self.arrows["down"].blit(self.maze.path_canvas, x, y)
+        elif self.player.animation_key == "left":
             y_offset = self.maze.y_offset
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32 - 112 + 16
 
-            self.arrows["left"].draw_to_window(x, y)
-        elif self.player.curr_state == "right":
+            self.arrows["left"].blit(self.maze.path_canvas, x, y)
+        elif self.player.animation_key == "right":
             y_offset = self.maze.y_offset
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32 + 16
 
-            self.arrows["right"].draw_to_window(x, y)
+            self.arrows["right"].blit(self.maze.path_canvas, x, y)
 
 
 class Clyde(Ghost):
@@ -441,7 +425,7 @@ class Clyde(Ghost):
             range.
     """
 
-    def __init__(self, player: Player, am: AssetManager, maze: Maze) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, player: Player) -> None:
         """Initialize Clyde with the game instance and set initial state.
 
         Args:
@@ -450,11 +434,11 @@ class Clyde(Ghost):
             maze: Maze instance.
         """
         super().__init__(
-            player, am, maze, (1, len(maze.grid) - 2), 3, 0x8000FF00
+            am, maze, player, (1, len(maze.grid) - 2), 3, 0x8000FF00
         )
         self.target_cell = self.player.curr_cell
 
-        self.curr_state = 'right'
+        self.animation_key = 'right'
         self._add_animation('up', self.am.get_animated_sprite('clyde_up'))
         self._add_animation('down', self.am.get_animated_sprite('clyde_down'))
         self._add_animation('left', self.am.get_animated_sprite('clyde_left'))
@@ -495,10 +479,11 @@ class Clyde(Ghost):
             self.target_cell = self.corner
             self.circle.pixels[self.circle.pixels > 0] &= 0x7FFFFFFF
 
-    def visualize_path(self) -> None:
+    def draw_path(self) -> None:
         """Draw the ghost's path and aggro circle to the window."""
-        super().visualize_path()
-        self.circle.draw_to_window(
+        super().draw_path()
+        self.circle.blit(
+            self.maze.path_canvas,
             self.player.x - 154,
             self.player.y - 154 + self.maze.y_offset
         )
@@ -519,7 +504,7 @@ class Inky(Ghost):
             direction.
     """
 
-    def __init__(self, player: Player, am: AssetManager, maze: Maze) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, player: Player) -> None:
         """Initialize Inky with the given game instance.
 
         Args:
@@ -528,9 +513,9 @@ class Inky(Ghost):
             maze: Maze instance.
         """
         super().__init__(
-            player,
             am,
             maze,
+            player,
             (len(maze.grid[0]) - 2, len(maze.grid) - 2),
             3, 0xA4CFEBFF,
         )
@@ -549,7 +534,7 @@ class Inky(Ghost):
             'left': self.am.get_sprite('inky_arrow_left'),
             'right': self.am.get_sprite('inky_arrow_right'),
         }
-        self.arrow = self.arrows[self.curr_state]
+        self.arrow = self.arrows[self.animation_key]
         for arrow in self.arrows.values():
             arrow.pixels[:] &= 0x80FFFFFF
 
@@ -560,16 +545,16 @@ class Inky(Ghost):
         the direction Pac-Man is currently facing. Falls back to Pac-Man's
         current cell if Pac-Man's direction is unrecognized.
         """
-        if self.player.curr_state == "down":
+        if self.player.animation_key == "down":
             x = self.player.curr_cell[0]
             y = self.player.curr_cell[1] - 2
-        elif self.player.curr_state == "up":
+        elif self.player.animation_key == "up":
             x = self.player.curr_cell[0]
             y = self.player.curr_cell[1] + 2
-        elif self.player.curr_state == "right":
+        elif self.player.animation_key == "right":
             x = self.player.curr_cell[0] - 2
             y = self.player.curr_cell[1]
-        elif self.player.curr_state == "left":
+        elif self.player.animation_key == "left":
             x = self.player.curr_cell[0] + 2
             y = self.player.curr_cell[1]
         else:
@@ -577,38 +562,38 @@ class Inky(Ghost):
             y = self.player.curr_cell[1]
         self.set_target((x, y))
 
-    def visualize_path(self) -> None:
+    def draw_path(self) -> None:
         """Draw the ghost's path and a directional arrow to the window.
 
         Draws the base path visualization, then overlays an arrow sprite
         pointing opposite to the direction Pac-Man is currently facing,
         placed near Inky's ambush target cell.
         """
-        super().visualize_path()
+        super().draw_path()
         if (
-            self.player.curr_state == "appear"
-            or self.player.curr_state == "up"
+            self.player.animation_key == "appear"
+            or self.player.animation_key == "up"
         ):
             y_offset = self.maze.y_offset + 16
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32
 
-            self.arrows["down"].draw_to_window(x, y)
-        elif self.player.curr_state == "down":
+            self.arrows["down"].blit(self.maze.path_canvas, x, y)
+        elif self.player.animation_key == "down":
             y_offset = self.maze.y_offset - 80 + 16
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32
 
-            self.arrows["up"].draw_to_window(x, y)
-        elif self.player.curr_state == "left":
+            self.arrows["up"].blit(self.maze.path_canvas, x, y)
+        elif self.player.animation_key == "left":
             y_offset = self.maze.y_offset
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32 + 16
 
-            self.arrows["right"].draw_to_window(x, y)
-        elif self.player.curr_state == "right":
+            self.arrows["right"].blit(self.maze.path_canvas, x, y)
+        elif self.player.animation_key == "right":
             y_offset = self.maze.y_offset
             y = self.player.curr_cell[1] * 32 + y_offset
             x = self.player.curr_cell[0] * 32 - 80 + 16
 
-            self.arrows["left"].draw_to_window(x, y)
+            self.arrows["left"].blit(self.maze.path_canvas, x, y)
