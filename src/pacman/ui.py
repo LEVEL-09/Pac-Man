@@ -129,7 +129,14 @@ class Keyboard:
         buffer: The buffer of characters typed by the user.
     """
 
-    def __init__(self, game: MLXApp, am: AssetManager, x: int, y: int, text_limit: int) -> None:
+    def __init__(
+        self,
+        game: MLXApp,
+        am: AssetManager,
+        x: int,
+        y: int,
+        text_limit: int,
+    ) -> None:
         """Initialize the keyboard with the given game instance and position.
 
         Args:
@@ -281,9 +288,7 @@ class Keyboard:
     # TODO: decide whether to keep draw or blit
     def draw(self) -> None:
         """Draw the keyboard to the window."""
-        self.layouts[self._caps_lock].draw_to_window(
-            self.game.win_ptr, self.x, self.y
-        )
+        self.layouts[self._caps_lock].draw_to_window(self.x, self.y)
 
     def blit(self, target: Sprite) -> None:
         """Blit the keyboard to the target sprite."""

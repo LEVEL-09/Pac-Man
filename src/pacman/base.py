@@ -1,7 +1,7 @@
 """Module containing base classes for the game."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Callable, ClassVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
 import numpy as np
 from mlx_wrapper import (
@@ -10,44 +10,58 @@ from mlx_wrapper import (
     KEY_UP,
     AnimatedSprite,
     AssetManager,
-    MLXApp,
     Sprite,
 )
 
-from pacman.ui import Button
 from pacman.maze import Maze
+from pacman.ui import Button
+
+if TYPE_CHECKING:
+    from pacman.game import Game
 
 
 class Scene(ABC):
     """Base class for all scenes in the game."""
 
-    __game: ClassVar[MLXApp | None] = None
+    _game: ClassVar[Game | None] = None
 
     def __init__(self) -> None:
-        """Initialize the scene.
-
-        game: Game instance.
-        """
-        self.game: MLXApp = self.get_game()
-        self.am = AssetManager("./assets.xml")
+        """Initialize the scene."""
+        self.game = self.get_game()
         self.canvas = Sprite.blank(self.game.width, self.game.height)
+        # Generate stars for the background
         self._stars = np.random.randint(
             low=[0, 0], high=[self.game.width, self.game.height], size=(300, 2)
         )
 
-    @classmethod
-    def set_game(cls, game: MLXApp) -> None:
-        """Set the global game context variable."""
-        cls.__game: MLXApp = game
+    @property
+    def am(self) -> AssetManager:
+        """Get the asset manager."""
+        return self.game.am
 
     @classmethod
-    def get_game(cls) -> MLXApp | None:
-        """Get the global game context variable."""
-        return cls.__game
+    def set_game(cls, game: Game) -> None:
+        """Set the global game context variable."""
+        Scene._game = game
+
+    @classmethod
+    def get_game(cls) -> Game:
+        """Get the global game context variable.
+
+        Returns:
+            MLXApp: The global game context variable.
+
+        Raises:
+            ValueError: If the game is not initialized.
+        """
+        if Scene._game is None:
+            raise ValueError(
+                "Game not initialized call Scene.set_game() first!")
+        return Scene._game
 
     def get_config_attr(self, attr: str) -> Any:
         """Get a configuration attribute."""
-        return getattr(self.__game.config, attr)
+        return getattr(self.game.config, attr)
 
     @abstractmethod
     def mount(self) -> None:
@@ -74,7 +88,7 @@ class Scene(ABC):
         self._stars += 1
         self._stars[:, 0] %= self.canvas.width
         self._stars[:, 1] %= self.canvas.height
-        self.canvas.fill(0xFF180000)
+        self.canvas.fill(0xFF080000)
 
         star_size = 2
         for x, y in self._stars:
@@ -87,8 +101,6 @@ class Menu(Scene, ABC):
     """Abstract base class for menus.
 
     Attributes:
-        game: Game instance.
-        canvas: canvas sprite for drawing.
         buttons: List of buttons in the menu.
         current_btn: Index of the currently focused button.
 
@@ -96,17 +108,10 @@ class Menu(Scene, ABC):
 
     def __init__(self) -> None:
         """Initialize the menu with the given MLX application and dimensions.
-
-        Args:
-            game: Game instance.
         """
         super().__init__()
-        self.canvas = Sprite.blank(self.game.width, self.game.height)
         self.buttons: list[Button] = []
         self.current_btn = -1
-        self._stars = np.random.randint(
-            low=[0, 0], high=[self.game.width, self.game.height], size=(300, 2)
-        )
 
     def mount(self) -> None:
         """Mount the main menu, making it active and visible."""
@@ -169,7 +174,11 @@ class Menu(Scene, ABC):
         """
         y_offset = 0
         for btn in self.buttons:
-            btn.draw(self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset)
+            btn.draw(
+                self.canvas,
+                (self.canvas.width - btn.w) // 2,
+                y + y_offset
+            )
             y_offset += btn.h + y_pad
         return y + y_offset
 
@@ -186,6 +195,8 @@ class MovingEntity:
     """Base class for all moving entities in the game.
 
     Attributes:
+        maze: Maze instance.
+        player: Player instance.
         gw: width of the maze grid.
         gh: height of the maze grid.
         curr_cell: current cell position.
@@ -202,10 +213,18 @@ class MovingEntity:
 
     CELL_SIZE = 32
 
-    def __init__(self, am: AssetManager, maze: Maze, start_cell: tuple[int, int], speed: int) -> None:
+    def __init__(
+        self,
+        am: AssetManager,
+        maze: Maze,
+        start_cell: tuple[int, int],
+        speed: int
+    ) -> None:
         """Initialize the moving entity.
 
         Args:
+            am: AssetManager for loading assets.
+            maze: Maze instance.
             start_cell: Starting cell position.
             speed: Speed of the entity.
         """
@@ -224,15 +243,24 @@ class MovingEntity:
         self.next_dx = 0
         self.next_dy = 0
 
-        self.curr_state = "left"
+        self.curr_state = 'left'
         self.animations: dict[str, AnimatedSprite] = {}
 
     def _add_animation(self, state: str, animation: AnimatedSprite) -> None:
-        """Add an animation to the entity's animations dictionary."""
+        """Add an animation to the entity's animations dictionary.
+
+        Args:
+            state: State name for the animation.
+            animation: AnimatedSprite to add.
+        """
         self.animations[state] = animation
 
     def _is_walkable(self, gx: int, gy: int) -> bool:
         """Whether the given grid position is walkable.
+
+        Args:
+            gx: x grid position.
+            gy: y grid position.
 
         Returns:
             bool: True if the position is walkable, False otherwise.
@@ -253,13 +281,13 @@ class MovingEntity:
         self.dy = new_dy
 
         if self.dx == 1:
-            self.curr_state = "right"
+            self.curr_state = 'right'
         elif self.dx == -1:
-            self.curr_state = "left"
+            self.curr_state = 'left'
         elif self.dy == 1:
-            self.curr_state = "down"
+            self.curr_state = 'down'
         elif self.dy == -1:
-            self.curr_state = "up"
+            self.curr_state = 'up'
 
         if old_state != self.curr_state:
             self.animations[self.curr_state].play()

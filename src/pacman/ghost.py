@@ -10,8 +10,8 @@ from mlx_wrapper import AssetManager, Sprite
 
 from pacman.base import MovingEntity
 from pacman.hitbox import Hitbox
-from src.pacman.maze import Maze
-from src.pacman.player import Player
+from pacman.maze import Maze
+from pacman.player import Player
 
 
 class GhostState(Enum):
@@ -38,6 +38,9 @@ class Ghost(ABC, MovingEntity):
     define how the ghost selects its target cell while chasing.
 
     Attributes:
+        player: Player instance.
+        am: AssetManager instance.
+        maze: Maze instance.
         hitbox (Hitbox): Collision hitbox of the ghost.
         state (GhostState): Current behavioral state of the ghost.
         target_cell (tuple[int, int]): Grid cell the ghost is pathing towards.
@@ -62,7 +65,9 @@ class Ghost(ABC, MovingEntity):
         """Initialize the ghost.
 
         Args:
-            game: Game instance.
+            player: Player instance.
+            am: AssetManager instance.
+            maze: Maze instance.
             corner: Starting cell position of the ghost,
                 typically its home corner.
             speed: Speed of the ghost.
@@ -119,7 +124,7 @@ class Ghost(ABC, MovingEntity):
         starting cell) in `self.path`. If no path is found, `self.path` is
         left unchanged.
         """
-        visited: set = set(self.curr_cell)
+        visited = {self.curr_cell}
 
         walkable_cells = sum([
             1 for dx, dy in self.DIRECTIONS
@@ -218,7 +223,7 @@ class Ghost(ABC, MovingEntity):
                     random.randint(1, len(self.maze.grid) - 2))
             is_reachable = any(
                 self.maze.grid[y + dy][x + dx] == 0
-                for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+                for dx, dy in self.DIRECTIONS
             )
 
             while self.maze.grid[y][x] != 0 or not is_reachable:
@@ -226,7 +231,7 @@ class Ghost(ABC, MovingEntity):
                         random.randint(1, len(self.maze.grid) - 2))
                 is_reachable = any(
                     self.maze.grid[y + dy][x + dx] == 0
-                    for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]
+                    for dx, dy in self.DIRECTIONS
                 )
             self.set_target((x, y))
 
@@ -300,9 +305,13 @@ class Blinky(Ghost):
         """Initialize Blinky with the given game instance.
 
         Args:
-            game: The game instance to associate with this ghost.
+            player: Player instance.
+            am: AssetManager for loading assets.
+            maze: Maze instance.
         """
-        super().__init__(player, am, maze, (len(maze.grid[0]) - 2, 1), 3, 0x80FF0000)
+        super().__init__(
+            player, am, maze, (len(maze.grid[0]) - 2, 1), 3, 0x80FF0000,
+        )
 
         self._add_animation('up', self.am.get_animated_sprite('blinky_up'))
         self._add_animation('down', self.am.get_animated_sprite('blinky_down'))
@@ -325,10 +334,10 @@ class Pinky(Ghost):
     of Pac-Man in whichever direction Pac-Man is currently facing.
 
     Attributes:
-        arrows (dict[str, Sprite]): Sprites for the directional arrow shown
+        arrows: Sprites for the directional arrow shown
             at Pinky's target cell, keyed by direction ("up", "down",
             "left", "right").
-        arrow (Sprite): Arrow sprite currently selected based on Pac-Man's
+        arrow: Arrow sprite currently selected based on Pac-Man's
             direction.
     """
 
@@ -336,11 +345,9 @@ class Pinky(Ghost):
         """Initialize Pinky with the given game instance.
 
         Args:
-            game: Game instance.
-            corner: Starting cell position of the ghost,
-                typically its home corner.
-            speed: Speed of the ghost.
-            path_color: Color used when visualizing the ghost's path.
+            player: Player instance.
+            am: AssetManager for loading assets.
+            maze: Maze instance.
         """
         super().__init__(player, am, maze, (1, 1), 3, 0x80FF00FF)
         self.curr_state = "down"
@@ -438,9 +445,13 @@ class Clyde(Ghost):
         """Initialize Clyde with the game instance and set initial state.
 
         Args:
-            game: The MLXApp instance.
+            player: Player instance.
+            am: AssetManager for loading assets.
+            maze: Maze instance.
         """
-        super().__init__(player, am, maze, (1, len(maze.grid) - 2), 3, 0x8000FF00)
+        super().__init__(
+            player, am, maze, (1, len(maze.grid) - 2), 3, 0x8000FF00
+        )
         self.target_cell = self.player.curr_cell
 
         self.curr_state = 'right'
@@ -452,9 +463,6 @@ class Clyde(Ghost):
         self.animations['right'].play()
 
         self.circle = self.am.get_sprite('clyde_circle')
-        self.drawable_path = Sprite.blank(
-            self.maze.canvas.width, self.maze.canvas.height
-        )
 
     def dist(self) -> float:
         """Calculate the euclidean distance to the player.
@@ -515,7 +523,9 @@ class Inky(Ghost):
         """Initialize Inky with the given game instance.
 
         Args:
-            game (MLXApp): Game instance.
+            player: Player instance.
+            am: AssetManager for loading assets.
+            maze: Maze instance.
         """
         super().__init__(
             player,

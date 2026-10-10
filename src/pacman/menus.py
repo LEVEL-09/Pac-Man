@@ -1,19 +1,13 @@
 """Module containing menus for the Pac-Man game."""
 from pacman.base import Menu
-from src.pacman.scenes import GamePlayScene
+from pacman.scenes import GamePlayScene
 
 
 class MainMenu(Menu):
     """Main menu of the Pac-Man game."""
 
     def __init__(self) -> None:
-        """Initialize the main menu.
-
-        Args:
-            app (MLXApp): The MLX application instance.
-            width (int): Width of the menu canvas.
-            height (int): Height of the menu canvas.
-        """
+        """Initialize the main menu."""
         super().__init__()
         self.add_button("Start", lambda: self.game.push_scene(GamePlayScene()))
         self.add_button("Leaderboard", lambda: print("Leaderboard pressed"))

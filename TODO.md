@@ -1,110 +1,36 @@
-PRIORITY: add win_ptr to `Asset` Context in mlx_wrapper `asset/base.py`
-1. Branch: feature/gameplay-scene (DONE)
-2. Move `asset_manager` to `Scene` base class for simplicity (DONE)
-3. expose `get_config_attr` to `Scene` base class for easy access to config attributes (DONE)
-```py
-def get_config_attr(self, attr: str) -> Any:
-    """Get a configuration attribute."""
-    return getattr(self.game.config, attr)
-```
-4. Implement `GameplayScene` to manage the gameplay scene
-5. Move `maze`, `ghosts`, `pacman` to `GameplayScene`
-6. Refactor all entities to access `GameplayScene` instead of `Game`
+### Problems to fix
 
-```py
-from mlx_wrapper import (
-    KEY_DOWN,
-    KEY_ENTER,
-    KEY_ESC,
-    KEY_LEFT,
-    KEY_RIGHT,
-    KEY_UP,
-    MLXApp,
-)
+- `Scene` allocates a full-window canvas and star field for every
+  scene
+- Ghosts each allocate a maze-sized `drawable_path` sprite
+- `Maze.pacgum_canvas` is allocated in every `create_maze_sprite` call and never used
+- `find_path` is unoptimized:
+  - it copies the whole path per visited node. use a `parent` dict and rebuild the path once at the end
+  - runs every frame for every ghost, and also from `at_tile_center`. only run when the target changes or at a tile center
+- `MainMenu.update` gets `logo` and the font every frame
 
-from pacman.base import Scene
-from pacman.ui import Keyboard
-from pacman.maze import Maze
-from src.pacman.ghost import Blinky, Clyde, Inky, Pinky
-from src.pacman.player import Player
+- might run into circular dependency problems (e.g.)`GamePlayScene` needs to push a `PauseMenu`
+  (`menus.py` already imports `scenes.py`).
+- make dependency passing consistent. Currently:
+    `Maze(game, am, ...)`, `Keyboard(game, am, ...)`,
+    `Player(maze, am, speed)`, `Ghost(player, am, maze, ...)`,
+    `MovingEntity(am, maze, ...)`.
+  - `am` is redundant when `game` is passed (`game.am`).
+  - `Maze` only needs `game.height`: pass `window_height`
+  - Entities can use `maze.am` instead of taking their own `am`.
+- remove `Scene.get_config_attr(str)` use `self.game.config` directly
+- Replace the literal `32` with one shared `CELL_SIZE` constant
+- Ghost/entity duplication:
+  - add a `_load_directional_animations(prefix)` helper for the repeated `up/down/left/right` blocks
+  - `frightened_mode` repeats the random-cell pick and reachability check
+    twice. Use a single loop
+  - `Ghost.update` state `if/elif` and Pinky/Inky target and arrow `if/elif` chains can become dictionary lookups
+- `self.move(dt)` instead of `super().move(dt)` in `Ghost.update` and `Player.update`
+- `Ghost.state` (`GhostState`) vs `curr_state` confusingly named, rename to `animation_key`
 
-
-class GamePlayScene(Scene):
-    """Game play scene."""
-
-    def __init__(self, game: MLXApp) -> None:
-        """Initialize the level scene.
-
-        Args:
-            game: Game instance.
-        """
-        super().__init__(game)
-
-        self._current_level = 0
-        self.score = 0
-        self.maze = Maze(self.game, self.game.width, self.game.height, 42, 10)
-
-        # self._next_level()
-        self._spawn_pacman()
-        self._spawn_ghosts()
-
-    def mount(self) -> None:
-        """Mount the level scene."""
-        self.game.bind_key(KEY_ESC, self._pause)
-        self.game.bind_key(KEY_UP, self.pacman.move_up)
-        self.game.bind_key(KEY_DOWN, self.pacman.move_down)
-        self.game.bind_key(KEY_LEFT, self.pacman.move_left)
-        self.game.bind_key(KEY_RIGHT, self.pacman.move_right)
-
-    def unmount(self) -> None:
-        """Unmount the level scene."""
-        self.game.unbind_key(KEY_ESC)
-        self.game.unbind_key(KEY_UP)
-        self.game.unbind_key(KEY_DOWN)
-        self.game.unbind_key(KEY_LEFT)
-        self.game.unbind_key(KEY_RIGHT)
-
-    def _pause(self) -> None:
-        """Pause the level scene."""
-        # self.game.push_scene(PauseScene(self.game))
-
-    def _next_level(self) -> None:
-        """Go to the next level."""
-        self._current_level += 1
-        self.game.maze.create_maze_sprite(self._current_level)
-
-    def _spawn_pacman(self) -> None:
-        """Spawn Pac-Man."""
-        self.pacman = Player(self.game)
-
-    def _spawn_ghosts(self) -> None:
-        """Spawn ghosts."""
-        self.ghosts = [
-            Blinky(self.game),
-            Pinky(self.game),
-            Inky(self.game),
-            Clyde(self.game),
-        ]
-
-    def _check_collisions(self) -> None:
-        """Check for collisions."""
-
-    def _check_win(self) -> None:
-        """Check for win."""
-
-    def update(self) -> None:
-        """Update the level scene."""
-        self.pacman.update()
-        for ghost in self.ghosts:
-            ghost.update()
-
-    def _draw_hud(self) -> None:
-        """Draw the HUD."""
-
-    def draw(self, x: int, y: int) -> None:
-        """Draw the level scene."""
-        self.maze.draw()
-        self.pacman.draw()
-        for ghost in self.game.ghosts:
-            ghost.draw()
-```
+- Clean up the `Scene` API:
+  - `Menu.update` is a redundant abstract function
+  - `draw(x, y)` parameters are unused by every scene
+  - `set_game`/`get_game` are classmethods that ignore `cls`
+  - `Scene.__init__` stores `self.game` while `get_game()` is available (PICK ONE)
+- `Maze` still uses the global `random.seed(seed)`. use local `rng = random.Random(seed)` so ghost randomness isn't affected

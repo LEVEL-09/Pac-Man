@@ -28,7 +28,7 @@ class Player(MovingEntity):
             (gw // 2) - ((gw // 2) % 2 == 0),
             (gh // 2) - ((gh // 2) % 2 == 0)
         )
-        super().__init__(am, maze, start_cell, 4)
+        super().__init__(am, maze, start_cell, speed)
         self.hitbox = Hitbox(3, 4, 24, 24)
 
         self.curr_state = "appear"
@@ -37,8 +37,9 @@ class Player(MovingEntity):
         self._add_animation("left", self.am.get_animated_sprite("pac_left"))
         self._add_animation("right", self.am.get_animated_sprite("pac_right"))
         self._add_animation("death", self.am.get_animated_sprite("pac_death"))
-        self._add_animation("appear", 
-            self.am.get_animated_sprite("pac_appear"))
+        self._add_animation(
+            "appear", self.am.get_animated_sprite("pac_appear")
+        )
         self.animations[self.curr_state].play()
 
         self.blank = Sprite.blank(32, 32)

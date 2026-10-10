@@ -7,7 +7,6 @@ from mlx_wrapper import (
     KEY_LEFT,
     KEY_RIGHT,
     KEY_UP,
-    MLXApp,
 )
 
 from pacman.base import Scene
@@ -34,10 +33,10 @@ class GamePlayScene(Scene):
             am=self.am,
             width=self.get_config_attr('maze_width'),
             height=self.get_config_attr('maze_height'),
-            seed=42, levels_number=10
+            seed=self.get_config_attr('maze_seed'),
+            levels_number=10
         )
 
-        # self._next_level()
         self._spawn_player()
         self._spawn_ghosts()
 
@@ -107,25 +106,21 @@ class EndScene(Scene):
 
     Displays the game over or win screen and waits for the player
     to press Enter.
-
-    Attributes:
-        lost: Whether the player lost or won.
     """
 
-    def __init__(self, lost: bool) -> None:
+    def __init__(self, won: bool) -> None:
         """Initialize the end scene.
 
         Args:
-            game: Game instance.
-            lost: Whether the player lost or won.
+            won: Whether the player won or lost.
         """
         super().__init__()
         self.font = self.am.get_font("kolostygra")
-        if lost:
+        if won:
             self.title = self.am.get_sprite("win")
         else:
             self.title = self.am.get_sprite("game_over")
-        self.keyboard = Keyboard(self.game, self.am, 0, 0, 30)
+        self.keyboard = Keyboard(self.game, self.am, 0, 0, text_limit=30)
         self.keyboard.x = (self.game.width - self.keyboard.width) // 2
         self.keyboard.y = (self.game.height - self.title.height) // 2
 
@@ -146,7 +141,9 @@ class EndScene(Scene):
     def update(self) -> None:
         """Update the end scene."""
         self.draw_stars()
-        self.title.blit(self.canvas, (self.canvas.width - self.title.width) // 2, 50)
+        self.title.blit(
+            self.canvas, (self.canvas.width - self.title.width) // 2, 50
+        )
         self.keyboard.blit(self.canvas)
         text_center = (
             self.canvas.width - self.font.measure_text(f"Your score: {1000}")
@@ -157,29 +154,30 @@ class EndScene(Scene):
             text_center,
             self.title.height + 150,
             0xFFFFFF00,
-            cache=True,
+            cache=True
         )
         text_center = (
             self.canvas.width - self.font.measure_text("Type in your username")
         ) // 2
         self.font.draw_text(
             self.canvas,
-            "Type in your username:",
+            "Type in your username",
             text_center,
             self.keyboard.y - self.font.atlas.height - 100,
             0xFFFFFFFF,
-            cache=True,
+            cache=True
         )
         if self.keyboard.buffer:
             text_center = (
-                self.canvas.width - self.font.measure_text(self.keyboard.buffer)
+                self.canvas.width -
+                self.font.measure_text(self.keyboard.buffer)
             ) // 2
             self.font.draw_text(
                 self.canvas,
                 self.keyboard.buffer,
                 text_center,
                 self.keyboard.y - self.font.atlas.height - 50,
-                0xFFFFFFFF,
+                0xFFFFFFFF
             )
 
     def draw(self, x: int, y: int) -> None:

@@ -1,11 +1,10 @@
 """Pac-Man game scene manager."""
 
-from mlx_wrapper import MLXApp
+from mlx_wrapper import AssetManager, MLXApp
 
 from pacman.base import Scene
 from pacman.menus import MainMenu
 from pacman.parser import Config
-from pacman.scenes import EndScene
 
 
 class Game(MLXApp):
@@ -13,6 +12,7 @@ class Game(MLXApp):
 
     Attributes:
         config: game parsed configuration from the config file.
+        am: AssetManager instance.
 
     """
 
@@ -24,11 +24,12 @@ class Game(MLXApp):
             (self.config.maze_height * 2 + 1) * 32,
             "Pac-Man",
         )
+        self.am = AssetManager("./assets.xml")
         Scene.set_game(self)
 
         # Scene stack
         self._scene_stack: list[Scene] = []
-        self.push_scene(EndScene(True))
+        self.push_scene(MainMenu())
 
     @property
     def _current_scene(self) -> Scene | None:

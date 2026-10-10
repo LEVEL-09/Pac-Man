@@ -92,9 +92,6 @@ class Maze:
 
         self.canvas = Sprite.blank(len(self.grid[0]) * 32, len(self.grid) * 32)
         self.canvas.fill(0xFF000000)
-        self.pacgum_canvas = Sprite.blank(
-            len(self.grid[0]) * 32, len(self.grid) * 32
-        )
         self.collectibles = {}
 
         for y in range(len(self.grid)):
