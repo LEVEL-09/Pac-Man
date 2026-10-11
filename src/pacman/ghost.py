@@ -5,6 +5,7 @@ import random
 from abc import ABC, abstractmethod
 from collections import deque
 from enum import Enum, auto
+from typing import ClassVar
 
 from mlx_wrapper import AssetManager
 
@@ -50,6 +51,8 @@ class Ghost(ABC, MovingEntity):
         drawable_path: Blank sprite used to draw the visualized path onto.
     """
 
+    FRIGHTENED_DURATION: ClassVar[float] = 10.0
+
     def __init__(
         self,
         am: AssetManager,
@@ -74,7 +77,6 @@ class Ghost(ABC, MovingEntity):
         self.player = player
         self.hitbox = Hitbox(3, 4, 24, 24)
         self.state = GhostState.CHASE
-        self.corner = corner
         self.target_cell: tuple[int, int] = corner
         self.path: list[tuple[int, int]] = []
         self.path_color = path_color
@@ -110,6 +112,13 @@ class Ghost(ABC, MovingEntity):
 
             self.next_dx = raw_dx
             self.next_dy = raw_dy
+
+    def reset(self) -> None:
+        """Reset the ghost to its initial state."""
+        super().reset()
+        self.path = []
+        self.target_cell = self.start_cell
+        self.state = GhostState.CHASE
 
     def find_path(self) -> None:
         """Compute the shortest path to `target_cell` using BFS.
@@ -192,7 +201,7 @@ class Ghost(ABC, MovingEntity):
 
     def scatter_mode(self) -> None:
         """Set the ghost's assigned corner as its target while scattering."""
-        self.set_target(self.corner)
+        self.set_target(self.start_cell)
 
     @abstractmethod
     def chase_mode(self) -> None:
@@ -232,9 +241,9 @@ class Ghost(ABC, MovingEntity):
 
         Switches to `GhostState.CHASE` once the ghost reaches its corner.
         """
-        self.set_target(self.corner)
+        self.set_target(self.start_cell)
 
-        if self.curr_cell == self.corner:
+        if self.curr_cell == self.start_cell:
             self.state = GhostState.CHASE
 
     def _update_direction(self, new_dx: int, new_dy: int) -> None:
@@ -264,12 +273,8 @@ class Ghost(ABC, MovingEntity):
 
         self.animations[self.animation_key].play()
 
-    def update(self, dt: float) -> None:
-        """Update the ghost for the current frame.
-
-        Dispatches to the handler matching the ghost's current `state`,
-        finds a path to the target cell, and moves the ghost along it.
-        """
+    def update_state(self) -> None:
+        """Update the ghost's state based on the current state."""
         if self.state == GhostState.CHASE:
             self.chase_mode()
         elif self.state == GhostState.SCATTER:
@@ -278,8 +283,7 @@ class Ghost(ABC, MovingEntity):
             self.frightened_mode()
         elif self.state == GhostState.EATEN:
             self.eaten_mode()
-
-        self.move(dt)
+        self.find_path()
 
 
 class Blinky(Ghost):
@@ -359,22 +363,18 @@ class Pinky(Ghost):
         is currently facing. Falls back to Pac-Man's current cell if Pinky
         has no path or Pac-Man's direction is unrecognized.
         """
-        if self.path:
-            if self.player.animation_key == "up":
-                x = self.player.curr_cell[0]
-                y = self.player.curr_cell[1] - 3
-            elif self.player.animation_key == "down":
-                x = self.player.curr_cell[0]
-                y = self.player.curr_cell[1] + 3
-            elif self.player.animation_key == "left":
-                x = self.player.curr_cell[0] - 3
-                y = self.player.curr_cell[1]
-            elif self.player.animation_key == "right":
-                x = self.player.curr_cell[0] + 3
-                y = self.player.curr_cell[1]
-            else:
-                x = self.player.curr_cell[0]
-                y = self.player.curr_cell[1]
+        if self.player.animation_key == "up":
+            x = self.player.curr_cell[0]
+            y = self.player.curr_cell[1] - 3
+        elif self.player.animation_key == "down":
+            x = self.player.curr_cell[0]
+            y = self.player.curr_cell[1] + 3
+        elif self.player.animation_key == "left":
+            x = self.player.curr_cell[0] - 3
+            y = self.player.curr_cell[1]
+        elif self.player.animation_key == "right":
+            x = self.player.curr_cell[0] + 3
+            y = self.player.curr_cell[1]
         else:
             x = self.player.curr_cell[0]
             y = self.player.curr_cell[1]
@@ -470,13 +470,13 @@ class Clyde(Ghost):
         The aggro circle is drawn at half alpha while Clyde is retreating to
         his corner, and restored to full alpha when he resumes chasing.
         """
-        if self.dist() < 320 and self.target_cell == self.corner:
+        if self.dist() < 320 and self.target_cell == self.start_cell:
             return
         if self.dist() > 150:
             self.target_cell = self.player.curr_cell
             self.circle.pixels[self.circle.pixels > 0] |= 0xFF000000
         else:
-            self.target_cell = self.corner
+            self.target_cell = self.start_cell
             self.circle.pixels[self.circle.pixels > 0] &= 0x7FFFFFFF
 
     def draw_path(self) -> None:

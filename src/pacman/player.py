@@ -1,6 +1,8 @@
 """Pac-Man player character."""
 
-from mlx_wrapper import AssetManager, Sprite
+from typing import Callable
+
+from mlx_wrapper import AssetManager
 
 from pacman.base import MovingEntity
 from pacman.hitbox import Hitbox
@@ -14,7 +16,7 @@ class Player(MovingEntity):
         hitbox: Hitbox for the player.
     """
 
-    def __init__(self, am: AssetManager, maze: Maze, speed: int) -> None:
+    def __init__(self, am: AssetManager, maze: Maze, speed: int, on_eat: Callable[..., None]) -> None:
         """Initialize the player character.
 
         Args:
@@ -41,29 +43,18 @@ class Player(MovingEntity):
             "appear", self.am.get_animated_sprite("pac_appear")
         )
         self.animations[self.animation_key].play()
+        self.at_tile_center = on_eat
 
-        self.blank = Sprite.blank(32, 32)
-        self.blank.fill(0xFF000000)
+    def reset(self) -> None:
+        """Reset the player to its initial state."""
+        super().reset()
+        self.animation_key = "appear"
+        self.animations[self.animation_key].play()
 
-    def at_tile_center(self) -> None:
-        """Handle when the player reaches the center of a tile."""
-        # TODO: Add logic to increase score and notify when all
-        # collectibles are collected
-        pacgum_type = self.maze.collectibles.pop(self.curr_cell, None)
-        if pacgum_type is not None:
-            self.blank.blit(
-                self.maze.canvas,
-                self.curr_cell[0] * 32,
-                self.curr_cell[1] * 32
-            )
-
-    def update(self, dt: float) -> None:
-        """Update the player's position and state."""
-        if not self.animations['appear'].is_finished:
-            self.animations[self.animation_key].update(dt)
-            return
-
-        self.move(dt)
+    def die(self) -> None:
+        """Die the player."""
+        self.animation_key = "death"
+        self.animations[self.animation_key].play()
 
     def move_up(self) -> None:
         """Set the player's next direction to move up."""

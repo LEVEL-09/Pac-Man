@@ -140,6 +140,7 @@ class Scene(ABC):
     def update(self) -> None:
         """Update the scene."""
 
+    # TODO: Rename to draw_background
     def draw_starfield(self) -> None:
         """Draw the starfield."""
         if self._starfield:
@@ -167,7 +168,8 @@ class MovingEntity:
         dy: Y-direction of the entity.
         next_dx: Next x-direction of the entity.
         next_dy: Next y-direction of the entity.
-        curr_state: current state of the entity.
+        start_cell: Starting cell position.
+        curr_state: Current state of the entity.
         animations: Animations of the entity.
     """
 
@@ -193,6 +195,7 @@ class MovingEntity:
         self.am = am
         self.gw = len(maze.grid[0]) - 1
         self.gh = len(maze.grid) - 1
+        self.start_cell = start_cell
         self.curr_cell = start_cell
 
         self.x = self.curr_cell[0] * 32
@@ -216,8 +219,6 @@ class MovingEntity:
         """
         self.animations[key] = animation
 
-    # TODO: This belongs to maze and should compute
-    # walkable cells at init and query from there
     def _is_walkable(self, gx: int, gy: int) -> bool:
         """Whether the given grid position is walkable.
 
@@ -258,7 +259,23 @@ class MovingEntity:
     def at_tile_center(self) -> None:
         """Override to handle when the entity reaches the center of a tile."""
 
-    def move(self, dt: float) -> None:
+    def reset(self) -> None:
+        """Override to reset the entity to its initial state."""
+        self.curr_cell = self.start_cell
+        self.dx, self.dy = 0, 0
+        self.next_dx, self.next_dy = 0, 0
+        self.animation_key = "left"
+        self.x = self.curr_cell[0] * 32
+        self.y = self.curr_cell[1] * 32
+
+        for animation in self.animations.values():
+            animation.reset()
+
+    def update_animation(self, dt: float) -> None:
+        """Update the entity's animation based on its current state."""
+        self.animations[self.animation_key].update(dt)
+
+    def move(self) -> None:
         """Move the entity's position and state.
 
         Based on the current direction and speed, it moves the entity along the
@@ -288,16 +305,13 @@ class MovingEntity:
                     self.curr_cell[0] + self.dx,
                     self.curr_cell[1] + self.dy,
                 ):
-                    if self.animation_key in self.animations:
+                    if self.animation_key in ('left', 'right', 'up', 'down'):
                         self.animations[self.animation_key].stop()
                     break
 
             self.x += self.dx
             self.y += self.dy
             remaining_steps -= 1
-
-        if self.animation_key in self.animations:
-            self.animations[self.animation_key].update(dt)
 
     def draw(self) -> None:
         """Draw the entity to the window."""
