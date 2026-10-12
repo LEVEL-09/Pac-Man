@@ -228,7 +228,7 @@ class GamePlayScene(Scene):
         """Go to the next level."""
         self._current_level += 1
         self._phase = Phase.STARTING
-        self._set_timer(3)
+        self._set_timer(2)
         self.maze.create_maze_sprite(self._current_level)
         self.player.reset()
         self._spawn_ghosts()
