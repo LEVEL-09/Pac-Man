@@ -1,38 +1,132 @@
 """Module containing base classes for the game."""
 
-
 from abc import ABC, abstractmethod
-from typing import Callable
+from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
-from mlx_wrapper import (
-    KEY_DOWN,
-    KEY_ENTER,
-    KEY_UP,
-    AnimatedSprite,
-    MLXApp,
-    Sprite,
-)
+from mlx_wrapper import AnimatedSprite, AssetManager, Sprite
 
-from pacman.ui import Button
+from pacman.maze import Maze
+from pacman.parser import Config
+
+if TYPE_CHECKING:
+    from pacman.game import Game
+
+
+class GameContext:
+    """App-wide services shared by scenes/components.
+
+    Should be set before any scene is initialized.
+
+    Attributes:
+        game: Game instance.
+        am: Asset manager.
+        config: Game configuration.
+    """
+
+    _current: ClassVar["GameContext | None"] = None
+
+    def __init__(self, game: Game, am: AssetManager, config: Config) -> None:
+        """Initialize the game context.
+
+        Args:
+            game: The game instance.
+            am: The asset manager.
+            config: The game configuration.
+        """
+        self.game = game
+        self.am = am
+        self.config = config
+
+    @classmethod
+    def set_context(cls, context: "GameContext") -> None:
+        """Set the current game context.
+
+        Args:
+            context: Game context to set.
+        """
+        cls._current = context
+
+    @classmethod
+    def get_context(cls) -> "GameContext":
+        """Get the current game context.
+
+        Returns:
+            The current game context.
+
+        Raises:
+            RuntimeError: If no game context is set.
+        """
+        if cls._current is None:
+            raise RuntimeError("No game context is set.")
+        return cls._current
+
+
+class StarField:
+    """Animated background of moving stars."""
+
+    def __init__(self, width: int, height: int, count: int = 300) -> None:
+        """Initialize the star field.
+
+        Args:
+            width: Width of the canvas.
+            height: Height of the canvas.
+            count: Number of stars to generate.
+        """
+        self._stars = np.random.randint(
+            low=[0, 0], high=[width, height], size=(count, 2)
+        )
+
+    def draw(self, canvas: Sprite) -> None:
+        """Draw the stars on the given canvas.
+
+        Args:
+            canvas: Canvas to draw on.
+        """
+        self._stars += 1
+        self._stars[:, 0] %= canvas.width
+        self._stars[:, 1] %= canvas.height
+        canvas.fill(0xFF080000)
+
+        star_size = 2
+        for x, y in self._stars:
+            canvas.pixels[y: y + star_size, x: x + star_size] = 0xFFFFFFFF
 
 
 class Scene(ABC):
-    """Base class for all scenes in the game."""
+    """Base class for all scenes in the game.
 
-    def __init__(self, game: MLXApp) -> None:
-        """Initialize the scene.
+    Attributes:
+        ctx: game context.
+        canvas: canvas to draw on.
+    """
 
-        game: Game instance.
-        """
-        self.game = game
-        self.canvas = Sprite.blank(game.width, game.height)
-        self.canvas.fill(0xFF180000)
-        self.buttons: list[Button] = []
-        self.current_btn = -1
-        self._stars = np.random.randint(
-            low=[0, 0], high=[game.width, game.height], size=(300, 2)
+    USE_STARFIELD: ClassVar[bool] = True
+
+    def __init__(self) -> None:
+        """Initialize the scene."""
+        self.ctx = GameContext.get_context()
+        self.canvas = Sprite.blank(self.game.width, self.game.height)
+        # initialize starfield if enabled
+        self._starfield = (
+            StarField(self.game.width, self.game.height)
+            if self.USE_STARFIELD else None
         )
+
+    @property
+    def game(self) -> Game:
+        """Game: game instance."""
+        return self.ctx.game
+
+    @property
+    def am(self) -> AssetManager:
+        """AssetManager: asset manager."""
+        return self.ctx.am
+
+    @property
+    def config(self) -> Config:
+        """Config: game configuration."""
+        return self.ctx.config
 
     @abstractmethod
     def mount(self) -> None:
@@ -46,134 +140,23 @@ class Scene(ABC):
     def update(self) -> None:
         """Update the scene."""
 
-    @abstractmethod
-    def draw(self, x: int, y: int) -> None:
-        """Draw the scene.
-
-        x: X-coordinate to draw the scene.
-        y: Y-coordinate to draw the scene.
-        """
-
-    def draw_stars(self) -> None:
-        """Draw a background animation of moving stars."""
-        self._stars += 1
-        self._stars[:, 0] %= self.canvas.width
-        self._stars[:, 1] %= self.canvas.height
-        self.canvas.fill(0xFF180000)
-
-        star_size = 2
-        for x, y in self._stars:
-            x_end = min(x + star_size, self.canvas.width)
-            y_end = min(y + star_size, self.canvas.height)
-            self.canvas.pixels[y:y_end, x:x_end] = 0xFFFFFFFF
-
-
-class Menu(Scene, ABC):
-    """Abstract base class for menus.
-
-    Attributes:
-        game: Game instance.
-        canvas: canvas sprite for drawing.
-        buttons: List of buttons in the menu.
-        current_btn: Index of the currently focused button.
-
-    """
-
-    def __init__(self, game: MLXApp) -> None:
-        """Initialize the menu with the given MLX application and dimensions.
-
-        Args:
-            game: Game instance.
-        """
-        super().__init__(game)
-        self.canvas = Sprite.blank(game.width, game.height)
-        self.buttons: list[Button] = []
-        self.current_btn = -1
-        self._stars = np.random.randint(
-            low=[0, 0], high=[game.width, game.height], size=(300, 2)
-        )
-
-    def mount(self) -> None:
-        """Mount the main menu, making it active and visible."""
-        self.game.bind_key(KEY_DOWN, self.focus_next)
-        self.game.bind_key(KEY_UP, self.focus_prev)
-        self.game.bind_key(KEY_ENTER, self.focus_enter)
-
-    def unmount(self) -> None:
-        """Unmouount the main menu, making it inactive and invisible."""
-        self.game.unbind_key(KEY_DOWN)
-        self.game.unbind_key(KEY_UP)
-        self.game.unbind_key(KEY_ENTER)
-
-    @abstractmethod
-    def update(self) -> None:
-        """Update the menu state."""
-
-    def add_button(self, text: str, callback: Callable[..., None]) -> None:
-        """Add a button to the menu.
-
-        Args:
-            text: The text to display on the button.
-            callback: The function to call when the
-                button is clicked.
-        """
-        self.buttons.append(Button(text, callback, self.game.am))
-
-    def focus_enter(self) -> None:
-        """Trigger the callback of the currently focused button."""
-        if self.current_btn != -1:
-            self.buttons[self.current_btn].on_click()
-
-    def focus_next(self) -> None:
-        """Move focus to the next button."""
-        if self.current_btn == -1:
-            self.current_btn = 0
+    def draw_background(self) -> None:
+        """Draw the starfield."""
+        if self._starfield:
+            self._starfield.draw(self.canvas)
         else:
-            self.buttons[self.current_btn].focused = False
-            self.current_btn = (self.current_btn + 1) % len(self.buttons)
-        self.buttons[self.current_btn].focused = True
+            self.canvas.fill(0xFF000000)
 
-    def focus_prev(self) -> None:
-        """Move focus to the previous button."""
-        if self.current_btn == -1:
-            self.current_btn = len(self.buttons) - 1
-        else:
-            self.buttons[self.current_btn].focused = False
-            self.current_btn = (self.current_btn - 1) % len(self.buttons)
-        self.buttons[self.current_btn].focused = True
-
-    def draw_buttons(self, y: int, y_pad: int) -> int:
-        """Draw all buttons on the canvas.
-
-        Args:
-            y: Starting y-coordinate for the first button.
-            y_pad: Padding between buttons.
-
-        Returns:
-            int: The final y-coordinate after drawing all buttons.
-        """
-        y_offset = 0
-        for btn in self.buttons:
-            btn.draw(
-                self.canvas, (self.canvas.width - btn.w) // 2, y + y_offset
-            )
-            y_offset += btn.h + y_pad
-        return y + y_offset
-
-    def draw(self, x: int, y: int) -> None:
-        """Draw the menu to the window.
-
-        x: X-coordinate of the menu.
-        y: Y-coordinate of the menu.
-        """
-        self.canvas.draw_to_window(self.game.win_ptr, x, y)
+    def draw(self) -> None:
+        """Draw the scene."""
+        self.canvas.draw_to_window(0, 0)
 
 
 class MovingEntity:
     """Base class for all moving entities in the game.
 
     Attributes:
-        game: Game instance.
+        maze: Maze instance.
         gw: width of the maze grid.
         gh: height of the maze grid.
         curr_cell: current cell position.
@@ -184,25 +167,34 @@ class MovingEntity:
         dy: Y-direction of the entity.
         next_dx: Next x-direction of the entity.
         next_dy: Next y-direction of the entity.
-        curr_state: current state of the entity.
+        start_cell: Starting cell position.
+        curr_state: Current state of the entity.
         animations: Animations of the entity.
     """
 
+    DIRECTIONS = ((0, -1), (1, 0), (0, 1), (-1, 0))
     CELL_SIZE = 32
 
     def __init__(
-        self, game: MLXApp, start_cell: tuple[int, int], speed: int
+        self,
+        am: AssetManager,
+        maze: Maze,
+        start_cell: tuple[int, int],
+        speed: int
     ) -> None:
         """Initialize the moving entity.
 
         Args:
-            game: Game instance.
+            am: AssetManager for loading assets.
+            maze: Maze instance.
             start_cell: Starting cell position.
             speed: Speed of the entity.
         """
-        self.game = game
-        self.gw = len(game.maze.grid[0]) - 1
-        self.gh = len(game.maze.grid) - 1
+        self.maze = maze
+        self.am = am
+        self.gw = len(maze.grid[0]) - 1
+        self.gh = len(maze.grid) - 1
+        self.start_cell = start_cell
         self.curr_cell = start_cell
 
         self.x = self.curr_cell[0] * 32
@@ -214,22 +206,31 @@ class MovingEntity:
         self.next_dx = 0
         self.next_dy = 0
 
-        self.curr_state = 'left'
+        self.animation_key = 'left'
         self.animations: dict[str, AnimatedSprite] = {}
 
-    def _add_animation(self, state: str, animation: AnimatedSprite) -> None:
-        """Add an animation to the entity's animations dictionary."""
-        self.animations[state] = animation
+    def _add_animation(self, key: str, animation: AnimatedSprite) -> None:
+        """Add an animation to the entity's animations dictionary.
+
+        Args:
+            state: State name for the animation.
+            animation: AnimatedSprite to add.
+        """
+        self.animations[key] = animation
 
     def _is_walkable(self, gx: int, gy: int) -> bool:
         """Whether the given grid position is walkable.
+
+        Args:
+            gx: x grid position.
+            gy: y grid position.
 
         Returns:
             bool: True if the position is walkable, False otherwise.
         """
         if gx < 0 or gx >= self.gw or gy < 0 or gy >= self.gh:
             return False
-        return bool(self.game.maze.grid[gy][gx] == 0)
+        return bool(self.maze.grid[gy][gx] == 0)
 
     def _update_direction(self, new_dx: int, new_dy: int) -> None:
         """Update the entity's direction and state based on the new direction.
@@ -238,24 +239,40 @@ class MovingEntity:
             new_dx: new x direction.
             new_dy: new y direction.
         """
-        old_state = self.curr_state
+        old_state = self.animation_key
         self.dx = new_dx
         self.dy = new_dy
 
         if self.dx == 1:
-            self.curr_state = "right"
+            self.animation_key = 'right'
         elif self.dx == -1:
-            self.curr_state = "left"
+            self.animation_key = 'left'
         elif self.dy == 1:
-            self.curr_state = "down"
+            self.animation_key = 'down'
         elif self.dy == -1:
-            self.curr_state = "up"
+            self.animation_key = 'up'
 
-        if old_state != self.curr_state:
-            self.animations[self.curr_state].play()
+        if old_state != self.animation_key:
+            self.animations[self.animation_key].play()
 
     def at_tile_center(self) -> None:
         """Override to handle when the entity reaches the center of a tile."""
+
+    def reset(self) -> None:
+        """Override to reset the entity to its initial state."""
+        self.curr_cell = self.start_cell
+        self.dx, self.dy = 0, 0
+        self.next_dx, self.next_dy = 0, 0
+        self.animation_key = "left"
+        self.x = self.curr_cell[0] * 32
+        self.y = self.curr_cell[1] * 32
+
+        for animation in self.animations.values():
+            animation.reset()
+
+    def update_animation(self, dt: float) -> None:
+        """Update the entity's animation based on its current state."""
+        self.animations[self.animation_key].update(dt)
 
     def move(self) -> None:
         """Move the entity's position and state.
@@ -287,19 +304,16 @@ class MovingEntity:
                     self.curr_cell[0] + self.dx,
                     self.curr_cell[1] + self.dy,
                 ):
-                    if self.curr_state in self.animations:
-                        self.animations[self.curr_state].stop()
+                    if self.animation_key in ('left', 'right', 'up', 'down'):
+                        self.animations[self.animation_key].stop()
                     break
 
             self.x += self.dx
             self.y += self.dy
             remaining_steps -= 1
 
-        if self.curr_state in self.animations:
-            self.animations[self.curr_state].update(self.game.dt)
-
     def draw(self) -> None:
         """Draw the entity to the window."""
-        self.animations[self.curr_state].draw_to_window(
-            self.game.win_ptr, self.x, self.y + self.game.maze.y_offset
+        self.animations[self.animation_key].draw_to_window(
+            self.x, self.y + self.maze.y_offset
         )

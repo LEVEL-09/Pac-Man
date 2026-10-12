@@ -2,30 +2,34 @@
 
 from mlx_wrapper import AssetManager, MLXApp
 
-from pacman.base import Scene
+from pacman.base import GameContext, Scene
 from pacman.menus import MainMenu
+from pacman.parser import Config
 
 
 class Game(MLXApp):
     """Entry point for the Pac-Man game.
 
     Attributes:
-        am: game's asset manager.
+        config: game parsed configuration from the config file.
+        am: AssetManager instance.
 
     """
 
-    def __init__(self, width: int, height: int, title: str) -> None:
-        """Initialize the game.
+    def __init__(self) -> None:
+        """Initialize the game."""
+        config = Config()
+        super().__init__(
+            (config.maze_width * 2 + 1) * 32,
+            (config.maze_height * 2 + 1) * 32,
+            "Pac-Man",
+        )
+        am = AssetManager("./assets.xml")
+        GameContext.set_context(GameContext(self, am, config))
 
-        Args:
-            width: width of the game window.
-            height: height of the game window.
-            title: title of the game window.
-        """
-        super().__init__(width, height, title)
-        self.am = AssetManager("./assets.xml")
+        # Scene stack
         self._scene_stack: list[Scene] = []
-        self.push_scene(MainMenu(self))
+        self.push_scene(MainMenu())
 
     @property
     def _current_scene(self) -> Scene | None:
@@ -40,7 +44,7 @@ class Game(MLXApp):
         """Push a scene onto the stack.
 
         Args:
-            scene (Scene): The scene to push.
+            scene: The scene to push.
         """
         if self._current_scene:
             self._current_scene.unmount()
@@ -60,7 +64,7 @@ class Game(MLXApp):
         """Switch to a new scene completely replacing the current one.
 
         Args:
-            new_scene (Scene): The scene to switch to.
+            new_scene: The scene to switch to.
         """
         if self._current_scene:
             self._current_scene.unmount()
@@ -80,4 +84,4 @@ class Game(MLXApp):
         """Update the current scene."""
         if self._current_scene:
             self._current_scene.update()
-            self._current_scene.draw(0, 0)
+            self._current_scene.draw()

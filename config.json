@@ -20,8 +20,8 @@
     "maze":
     {
         "seed": 43,
-        "width": 34,
-        "height": 31
+        "width": 12,
+        "height": 12
     },
     
     "player":
