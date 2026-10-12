@@ -215,7 +215,7 @@ class GamePlayScene(Scene):
     def _check_win(self) -> None:
         """Check for win."""
         if not self.maze.collectibles:
-            if self._current_level == 0:
+            if self._current_level == 9:
                 self.game.switch_scene(EndScene(True, self.player_score))
             else:
                 self._next_level()
