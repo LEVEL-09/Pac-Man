@@ -239,19 +239,6 @@ class GamePlayScene(Scene):
         self.player.reset()
         self._spawn_ghosts()
 
-    def _spawn_player(self) -> None:
-        """Spawn Pac-Man."""
-        self.player = Player(self.am, self.maze, 4, self._eat_pacgum)
-
-    def _spawn_ghosts(self) -> None:
-        """Spawn ghosts."""
-        self.ghosts = [
-            Blinky(self.am, self.maze, self.player),
-            Pinky(self.am, self.maze, self.player),
-            Inky(self.am, self.maze, self.player),
-            Clyde(self.am, self.maze, self.player)
-        ]
-
 
 class EndScene(Scene):
     """End scene for the game.
