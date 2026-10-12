@@ -363,18 +363,22 @@ class Pinky(Ghost):
         is currently facing. Falls back to Pac-Man's current cell if Pinky
         has no path or Pac-Man's direction is unrecognized.
         """
-        if self.player.animation_key == "up":
-            x = self.player.curr_cell[0]
-            y = self.player.curr_cell[1] - 3
-        elif self.player.animation_key == "down":
-            x = self.player.curr_cell[0]
-            y = self.player.curr_cell[1] + 3
-        elif self.player.animation_key == "left":
-            x = self.player.curr_cell[0] - 3
-            y = self.player.curr_cell[1]
-        elif self.player.animation_key == "right":
-            x = self.player.curr_cell[0] + 3
-            y = self.player.curr_cell[1]
+        if self.path:
+            if self.player.animation_key == "up":
+                x = self.player.curr_cell[0]
+                y = self.player.curr_cell[1] - 3
+            elif self.player.animation_key == "down":
+                x = self.player.curr_cell[0]
+                y = self.player.curr_cell[1] + 3
+            elif self.player.animation_key == "left":
+                x = self.player.curr_cell[0] - 3
+                y = self.player.curr_cell[1]
+            elif self.player.animation_key == "right":
+                x = self.player.curr_cell[0] + 3
+                y = self.player.curr_cell[1]
+            else:
+                x = self.player.curr_cell[0]
+                y = self.player.curr_cell[1]
         else:
             x = self.player.curr_cell[0]
             y = self.player.curr_cell[1]
