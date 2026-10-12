@@ -152,7 +152,7 @@ class GamePlayScene(Scene):
             for ghost in self.ghosts:
                 ghost.reset()
             self.player.reset()
-            self._phase = Phase.PLAYING
+            self._phase = Phase.STARTING
         self.player.update_animation(self.game.dt)
 
     def _eat_pacgum(self) -> None:
