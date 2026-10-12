@@ -24,7 +24,7 @@ class GameContext:
         config: Game configuration.
     """
 
-    _current: ClassVar[GameContext | None] = None
+    _current: ClassVar["GameContext | None"] = None
 
     def __init__(self, game: Game, am: AssetManager, config: Config) -> None:
         """Initialize the game context.
@@ -39,7 +39,7 @@ class GameContext:
         self.config = config
 
     @classmethod
-    def set_context(cls, context: GameContext) -> None:
+    def set_context(cls, context: "GameContext") -> None:
         """Set the current game context.
 
         Args:
@@ -48,7 +48,7 @@ class GameContext:
         cls._current = context
 
     @classmethod
-    def get_context(cls) -> GameContext:
+    def get_context(cls) -> "GameContext":
         """Get the current game context.
 
         Returns:
