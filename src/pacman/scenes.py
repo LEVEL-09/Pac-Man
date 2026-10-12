@@ -237,7 +237,8 @@ class GamePlayScene(Scene):
         self._set_timer(2)
         self.maze.create_maze_sprite(self._current_level)
         self.player.reset()
-        self._spawn_ghosts()
+        for ghost in self.ghosts:
+            ghost.reset()
 
 
 class EndScene(Scene):
