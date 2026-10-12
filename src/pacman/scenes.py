@@ -295,7 +295,9 @@ class EndScene(Scene):
         )
         self.keyboard.blit(self.canvas)
         text_center = (
-            self.canvas.width - self.font.measure_text(f"Your score: {1000}")
+            self.canvas.width - self.font.measure_text(
+                f"Your score: {self.player_score}"
+            )
         ) // 2
         self.font.draw_text(
             self.canvas,
