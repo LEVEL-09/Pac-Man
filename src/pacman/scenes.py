@@ -120,6 +120,7 @@ class GamePlayScene(Scene):
         self._elapsed += self.game.dt
         if self._elapsed >= self.timer:
             self._elapsed = 0.
+            self.set_timer(self.config.game_time)
             self._phase = Phase.PLAYING
         self.player.update_animation(self.game.dt)
         for ghost in self.ghosts:
