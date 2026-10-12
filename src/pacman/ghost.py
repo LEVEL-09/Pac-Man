@@ -392,6 +392,9 @@ class Pinky(Ghost):
         Pinky's ambush target cell.
         """
         super().draw_path()
+        if self.state == GhostState.FRIGHTENED:
+            return
+
         if (
             self.player.animation_key == "appear"
             or self.player.animation_key == "up"
@@ -482,6 +485,9 @@ class Clyde(Ghost):
     def draw_path(self) -> None:
         """Draw the ghost's path and aggro circle to the window."""
         super().draw_path()
+        if self.state == GhostState.FRIGHTENED:
+            return
+
         self.circle.blit(
             self.maze.path_canvas,
             self.player.x - 154,
@@ -570,6 +576,9 @@ class Inky(Ghost):
         placed near Inky's ambush target cell.
         """
         super().draw_path()
+        if self.state == GhostState.FRIGHTENED:
+            return
+
         if (
             self.player.animation_key == "appear"
             or self.player.animation_key == "up"

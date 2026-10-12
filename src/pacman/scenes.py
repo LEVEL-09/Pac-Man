@@ -71,19 +71,8 @@ class GamePlayScene(Scene):
             Clyde(self.am, self.maze, self.player)
         ]
 
-        self._elapsed = 0.
-        self.timer = 0.
+        self.game_time = 0.
         self._frightened_timer = 0.
-
-        self._set_timer(2)
-
-    def _set_timer(self, timer: float) -> None:
-        """Set the timer.
-
-        Args:
-            timer: timer value
-        """
-        self.timer = timer
 
     def mount(self) -> None:
         """Mount the level scene."""
@@ -123,21 +112,26 @@ class GamePlayScene(Scene):
 
     def _update_starting(self) -> None:
         """Update the starting state."""
-        self._elapsed += self.game.dt
-        if (
-            self._elapsed >= self.timer
-            or self.player.animations[self.player.animation_key].is_finished
-        ):
-            self._elapsed = 0.
-            self._set_timer(self.config.game_time)
+        if self.player.animations[self.player.animation_key].is_finished:
             self._phase = Phase.PLAYING
+            self.game_time = self.config.game_time
+
         self.player.update_animation(self.game.dt)
         for ghost in self.ghosts:
             ghost.update_animation(self.game.dt)
 
     def _update_playing(self) -> None:
         """Update the playing state."""
+        self._update_frightened()
+        self._handle_collisions()
         self._check_win()
+        self._check_game_time()
+
+        if (
+            self._phase != Phase.PLAYING
+            or self.game._current_scene is not self
+        ):
+            return
 
         self.player.update_animation(self.game.dt)
         self.player.move()
@@ -145,9 +139,6 @@ class GamePlayScene(Scene):
             ghost.update_animation(self.game.dt)
             ghost.update_state()
             ghost.move()
-
-        self._update_frightened()
-        self._handle_collisions()
 
     def _update_dying(self) -> None:
         """Update the dying state."""
@@ -191,35 +182,56 @@ class GamePlayScene(Scene):
                 if ghost.state == GhostState.FRIGHTENED:
                     ghost.state = GhostState.CHASE
 
-    def _check_collisions(self) -> int:
+    def _check_collisions(self) -> list[int]:
         """Check for collisions.
 
         Returns:
-            int: Index of the ghost that collided with Pac-Man, or -1
-                if no collision occurred.
+            list[int]: Indices of the ghosts that collided with Pac-Man.
         """
-        for i, ghost in enumerate(self.ghosts):
+        return [
+            i for i, ghost in enumerate(self.ghosts)
             if ghost.hitbox.detect_collision(
                 ghost.x, ghost.y,
                 self.player.hitbox,
                 self.player.x, self.player.y
-            ):
-                return i
-        return -1
+            )
+        ]
 
     def _handle_collisions(self) -> None:
-        collided = self._check_collisions()
-        if collided != -1:
-            collided_ghost = self.ghosts[collided]
-            if collided_ghost.state in (GhostState.CHASE, GhostState.SCATTER):
-                self._phase = Phase.DYING
-                self.player.die()
-                self.player_lives -= 1
-                if self.player_lives == 0:
-                    self.game.switch_scene(EndScene(False, self.player_score))
-            elif collided_ghost.state == GhostState.FRIGHTENED:
-                collided_ghost.state = GhostState.EATEN
+        """Handle collisions between the player and ghosts."""
+        collided_indices = self._check_collisions()
+        if not collided_indices:
+            return
+
+        collided_ghosts = [self.ghosts[i] for i in collided_indices]
+
+        attacking_ghosts = any(
+            g.state in (GhostState.CHASE, GhostState.SCATTER)
+            for g in collided_ghosts
+        )
+
+        if attacking_ghosts:
+            self._phase = Phase.DYING
+            self.player.die()
+            self.player_lives -= 1
+            if self.player_lives == 0:
+                self.game.switch_scene(EndScene(False, self.player_score))
+            return
+
+        for ghost in collided_ghosts:
+            if ghost.state == GhostState.FRIGHTENED:
+                ghost.state = GhostState.EATEN
                 self.player_score += self.ghost_score
+
+    def _check_game_time(self) -> None:
+        """Check the timer. If the timer runs out, the game is over."""
+        self.game_time -= self.game.dt
+
+        if self.game_time <= 0:
+            self.game_time = 0
+            self.player_lives = 0
+            self._phase = Phase.DYING
+            self.game.switch_scene(EndScene(False, self.player_score))
 
     def _check_win(self) -> None:
         """Check for win."""
@@ -237,7 +249,7 @@ class GamePlayScene(Scene):
         """Go to the next level."""
         self._current_level += 1
         self._phase = Phase.STARTING
-        self._set_timer(2)
+        self.game_time = self.config.game_time
         self.maze.create_maze_sprite(self._current_level)
         self.player.reset()
         for ghost in self.ghosts:
