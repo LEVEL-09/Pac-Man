@@ -76,8 +76,6 @@ class GamePlayScene(Scene):
         self._frightened_timer = 0.
 
         self._set_timer(2)
-        self._spawn_player()
-        self._spawn_ghosts()
 
     def _set_timer(self, timer: float) -> None:
         """Set the timer.
