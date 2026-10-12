@@ -1,3 +1,0 @@
-- Reverify the robustness and correctness of the changes and refactoring done up to this point
-- Use `switch_scene` for transitions that shouldn't return (e.g. `MainMenu` -> `GamePlayScene`)
-- Complete the implementation of `GamePlayScene`

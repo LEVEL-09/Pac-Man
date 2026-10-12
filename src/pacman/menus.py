@@ -104,7 +104,7 @@ class MainMenu(Menu):
 
     def update(self) -> None:
         """Update the main menu canvas."""
-        self.draw_starfield()
+        self.draw_background()
         y = (self.canvas.height - 900) // 2
         self.logo.blit(
             self.canvas, (self.canvas.width - self.logo.width) // 2, y

@@ -16,7 +16,13 @@ class Player(MovingEntity):
         hitbox: Hitbox for the player.
     """
 
-    def __init__(self, am: AssetManager, maze: Maze, speed: int, on_eat: Callable[..., None]) -> None:
+    def __init__(
+        self,
+        am: AssetManager,
+        maze: Maze,
+        speed: int,
+        on_eat: Callable[..., None]
+    ) -> None:
         """Initialize the player character.
 
         Args:
@@ -43,7 +49,7 @@ class Player(MovingEntity):
             "appear", self.am.get_animated_sprite("pac_appear")
         )
         self.animations[self.animation_key].play()
-        self.at_tile_center = on_eat
+        self.at_tile_center: Callable[..., None] = on_eat
 
     def reset(self) -> None:
         """Reset the player to its initial state."""

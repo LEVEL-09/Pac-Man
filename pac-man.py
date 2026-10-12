@@ -1,12 +1,8 @@
 """Entry point script for launching the Pac-Man game."""
 
 
-from pacman.game import Game
-
-
 def main() -> None:
     """Run the Pac-Man game."""
-    Game().start()
 
 
 if __name__ == "__main__":

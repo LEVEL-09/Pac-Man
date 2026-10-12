@@ -65,9 +65,9 @@ class Ghost(ABC, MovingEntity):
         """Initialize the ghost.
 
         Args:
-            player: Player instance.
             am: AssetManager instance.
             maze: Maze instance.
+            player: Player instance.
             corner: Starting cell position of the ghost,
                 typically its home corner.
             speed: Speed of the ghost.
@@ -392,26 +392,22 @@ class Pinky(Ghost):
             self.player.animation_key == "appear"
             or self.player.animation_key == "up"
         ):
-            y_offset = self.maze.y_offset - 112 + 16
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32 - 112 + 16
             x = self.player.curr_cell[0] * 32
 
             self.arrows["up"].blit(self.maze.path_canvas, x, y)
         elif self.player.animation_key == "down":
-            y_offset = self.maze.y_offset + 16
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32 + 16
             x = self.player.curr_cell[0] * 32
 
             self.arrows["down"].blit(self.maze.path_canvas, x, y)
         elif self.player.animation_key == "left":
-            y_offset = self.maze.y_offset
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32
             x = self.player.curr_cell[0] * 32 - 112 + 16
 
             self.arrows["left"].blit(self.maze.path_canvas, x, y)
         elif self.player.animation_key == "right":
-            y_offset = self.maze.y_offset
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32
             x = self.player.curr_cell[0] * 32 + 16
 
             self.arrows["right"].blit(self.maze.path_canvas, x, y)
@@ -574,26 +570,22 @@ class Inky(Ghost):
             self.player.animation_key == "appear"
             or self.player.animation_key == "up"
         ):
-            y_offset = self.maze.y_offset + 16
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32 + 16
             x = self.player.curr_cell[0] * 32
 
             self.arrows["down"].blit(self.maze.path_canvas, x, y)
         elif self.player.animation_key == "down":
-            y_offset = self.maze.y_offset - 80 + 16
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32 - 80 + 16
             x = self.player.curr_cell[0] * 32
 
             self.arrows["up"].blit(self.maze.path_canvas, x, y)
         elif self.player.animation_key == "left":
-            y_offset = self.maze.y_offset
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32
             x = self.player.curr_cell[0] * 32 + 16
 
             self.arrows["right"].blit(self.maze.path_canvas, x, y)
         elif self.player.animation_key == "right":
-            y_offset = self.maze.y_offset
-            y = self.player.curr_cell[1] * 32 + y_offset
+            y = self.player.curr_cell[1] * 32
             x = self.player.curr_cell[0] * 32 - 80 + 16
 
             self.arrows["left"].blit(self.maze.path_canvas, x, y)

@@ -25,6 +25,12 @@ class Phase(Enum):
     DYING = auto()
 
 
+class Hud:
+    """HUD for the game."""
+    def __init__(self, target: Sprite) -> None:
+        pass
+
+
 class GamePlayScene(Scene):
     """Game play scene."""
 
@@ -53,21 +59,29 @@ class GamePlayScene(Scene):
         }
 
         self.maze = Maze(
-            win_height=self.game.height,
-            am=self.am,
-            width=self.config.maze_width,
-            height=self.config.maze_height,
-            seed=self.config.maze_seed,
-            levels_number=10
+            self.game.height,
+            self.am,
+            self.config.maze_width,
+            self.config.maze_height,
+            self.config.maze_seed,
+            10
         )
 
         self._elapsed = 0.
         self.timer = 0.
         self._frightened_timer = 0.
 
-        self.set_timer(2)
+        self._set_timer(2)
         self._spawn_player()
         self._spawn_ghosts()
+
+    def _set_timer(self, timer: float) -> None:
+        """Set the timer.
+
+        Args:
+            timer: timer value
+        """
+        self.timer = timer
 
     def mount(self) -> None:
         """Mount the level scene."""
@@ -85,15 +99,58 @@ class GamePlayScene(Scene):
         self.game.unbind_key(KEY_LEFT)
         self.game.unbind_key(KEY_RIGHT)
 
+    def update(self) -> None:
+        """Update the level scene."""
+        self._phase_update[self._phase]()
+
+    def _draw_hud(self) -> None:
+        """Draw the HUD."""
+
+    def draw(self) -> None:
+        """Draw the level scene."""
+        self.draw_background()
+        super().draw()
+        self.maze.draw()
+        self.maze.path_canvas.fill(0)
+        for ghost in self.ghosts:
+            ghost.draw()
+            # TODO: Check if cheat mode is enabled and draw path
+            ghost.draw_path()
+        self.maze.path_canvas.draw_to_window(0, self.maze.y_offset)
+        self.player.draw()
+
     def _update_starting(self) -> None:
         """Update the starting state."""
-        if self._elapsed >= (self.game.dt * 60) * self.timer: # after 3 seconds change phase to PLAYING
+        self._elapsed += self.game.dt
+        if self._elapsed >= self.timer:
             self._elapsed = 0.
             self._phase = Phase.PLAYING
-        self._elapsed += self.game.dt
         self.player.update_animation(self.game.dt)
         for ghost in self.ghosts:
             ghost.update_animation(self.game.dt)
+
+    def _update_playing(self) -> None:
+        """Update the playing state."""
+        self._check_win()
+
+        self.player.update_animation(self.game.dt)
+        self.player.move()
+        for ghost in self.ghosts:
+            ghost.update_animation(self.game.dt)
+            ghost.update_state()
+            ghost.move()
+
+        self._update_frightened()
+        self._handle_collisions()
+
+    def _update_dying(self) -> None:
+        """Update the dying state."""
+        if self.player.animations[self.player.animation_key].is_finished:
+            for ghost in self.ghosts:
+                ghost.reset()
+            self.player.reset()
+            self._phase = Phase.PLAYING
+        self.player.update_animation(self.game.dt)
 
     def _eat_pacgum(self) -> None:
         """Eat a pacgum."""
@@ -128,49 +185,43 @@ class GamePlayScene(Scene):
                 if ghost.state == GhostState.FRIGHTENED:
                     ghost.state = GhostState.CHASE
 
-    def _update_playing(self) -> None:
-        """Update the playing state."""
-        self.player.update_animation(self.game.dt)
-        self.player.move()
-        for ghost in self.ghosts:
-            ghost.update_animation(self.game.dt)
-            ghost.update_state()
-            ghost.move()
+    def _check_collisions(self) -> int:
+        """Check for collisions.
 
-        self._update_frightened()
+        Returns:
+            int: Index of the ghost that collided with Pac-Man, or -1
+                if no collision occurred.
+        """
+        for i, ghost in enumerate(self.ghosts):
+            if ghost.hitbox.detect_collision(
+                ghost.x, ghost.y,
+                self.player.hitbox,
+                self.player.x, self.player.y
+            ):
+                return i
+        return -1
+
+    def _handle_collisions(self) -> None:
         collided = self._check_collisions()
         if collided != -1:
             collided_ghost = self.ghosts[collided]
-            if (
-                collided_ghost.state in (GhostState.CHASE, GhostState.SCATTER)
-                # and not self.invincible
-            ):
+            if collided_ghost.state in (GhostState.CHASE, GhostState.SCATTER):
                 self._phase = Phase.DYING
                 self.player.die()
                 self.player_lives -= 1
                 if self.player_lives == 0:
-                    self.game.switch_scene(EndScene(False))
-                return
+                    self.game.switch_scene(EndScene(False, self.player_score))
             elif collided_ghost.state == GhostState.FRIGHTENED:
                 collided_ghost.state = GhostState.EATEN
                 self.player_score += self.ghost_score
 
-    def _update_dying(self) -> None:
-        """Update the dying state."""
-        if self.player.animations[self.player.animation_key].is_finished:
-            for ghost in self.ghosts:
-                ghost.reset()
-            self.player.reset()
-            self._phase = Phase.PLAYING
-        self.player.update_animation(self.game.dt)
-
-    def set_timer(self, timer: float) -> None:
-        """Set the timer.
-
-        Args:
-            timer: timer value
-        """
-        self.timer = timer
+    def _check_win(self) -> None:
+        """Check for win."""
+        if not self.maze.collectibles:
+            if self._current_level == 0:
+                self.game.switch_scene(EndScene(True, self.player_score))
+            else:
+                self._next_level()
 
     def _pause(self) -> None:
         """Pause the level scene."""
@@ -180,7 +231,7 @@ class GamePlayScene(Scene):
         """Go to the next level."""
         self._current_level += 1
         self._phase = Phase.STARTING
-        self.set_timer(3)
+        self._set_timer(3)
         self.maze.create_maze_sprite(self._current_level)
         self.player.reset()
         self._spawn_ghosts()
@@ -198,64 +249,30 @@ class GamePlayScene(Scene):
             Clyde(self.am, self.maze, self.player)
         ]
 
-    def _check_collisions(self) -> int:
-        """Check for collisions.
-
-        Returns:
-            int: Index of the ghost that collided with Pac-Man, or -1
-                if no collision occurred.
-        """
-        for i, ghost in enumerate(self.ghosts):
-            if ghost.hitbox.detect_collision(
-                ghost.x, ghost.y,
-                self.player.hitbox,
-                self.player.x, self.player.y
-            ):
-                return i
-        return -1
-
-    def _check_win(self) -> None:
-        """Check for win."""
-        if not self.maze.collectibles: 
-            if self._current_level == 9:
-                self.game.push_scene(EndScene(True))
-            else:
-                self._next_level()
-
-    def update(self) -> None:
-        """Update the level scene."""
-        self._check_win()
-        self._phase_update[self._phase]()
-
-    def _draw_hud(self) -> None:
-        """Draw the HUD."""
-
-    def draw(self) -> None:
-        """Draw the level scene."""
-        self.maze.draw()
-        self.maze.path_canvas.fill(0)
-        for ghost in self.ghosts:
-            ghost.draw()
-            # TODO: Check if cheat mode is enabled and draw path
-            # ghost.draw_path()
-        self.maze.path_canvas.draw_to_window(0, self.maze.y_offset)
-        self.player.draw()
-
 
 class EndScene(Scene):
     """End scene for the game.
 
     Displays the game over or win screen and waits for the player
     to press Enter.
+
+    Attributes:
+        won: Whether the player won or lost.
+        player_score: Player's score.
+        font: Font used for text.
+        title: Sprite used for the win or game over title.
+        keyboard: Keyboard used to wait for the player to press Enter.
     """
 
-    def __init__(self, won: bool) -> None:
+    def __init__(self, won: bool, player_score: int) -> None:
         """Initialize the end scene.
 
         Args:
             won: Whether the player won or lost.
+            player_score: The player's score.
         """
         super().__init__()
+        self.player_score = player_score
         self.font = self.am.get_font("kolostygra")
         if won:
             self.title = self.am.get_sprite("win")
@@ -281,7 +298,7 @@ class EndScene(Scene):
 
     def update(self) -> None:
         """Update the end scene."""
-        self.draw_starfield()
+        self.draw_background()
         self.title.blit(
             self.canvas, (self.canvas.width - self.title.width) // 2, 50
         )
@@ -291,7 +308,7 @@ class EndScene(Scene):
         ) // 2
         self.font.draw_text(
             self.canvas,
-            f"Your score: {1000}",
+            f"Your score: {self.player_score}",
             text_center,
             self.title.height + 150,
             0xFFFFFF00,

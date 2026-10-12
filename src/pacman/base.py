@@ -140,8 +140,7 @@ class Scene(ABC):
     def update(self) -> None:
         """Update the scene."""
 
-    # TODO: Rename to draw_background
-    def draw_starfield(self) -> None:
+    def draw_background(self) -> None:
         """Draw the starfield."""
         if self._starfield:
             self._starfield.draw(self.canvas)
