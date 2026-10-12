@@ -62,6 +62,14 @@ class GamePlayScene(Scene):
             self.config.maze_seed,
             10
         )
+        self.player = Player(self.am, self.maze, 4, self._eat_pacgum)
+
+        self.ghosts = [
+            Blinky(self.am, self.maze, self.player),
+            Pinky(self.am, self.maze, self.player),
+            Inky(self.am, self.maze, self.player),
+            Clyde(self.am, self.maze, self.player)
+        ]
 
         self._elapsed = 0.
         self.timer = 0.
