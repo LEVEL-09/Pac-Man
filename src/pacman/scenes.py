@@ -124,7 +124,10 @@ class GamePlayScene(Scene):
     def _update_starting(self) -> None:
         """Update the starting state."""
         self._elapsed += self.game.dt
-        if self._elapsed >= self.timer:
+        if (
+            self._elapsed >= self.timer
+            or self.player.animations[self.player.animation_key].is_finished
+        ):
             self._elapsed = 0.
             self.set_timer(self.config.game_time)
             self._phase = Phase.PLAYING
