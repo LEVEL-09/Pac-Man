@@ -20,15 +20,11 @@ from pacman.ui import Keyboard
 
 
 class Phase(Enum):
+    """Represents the current phase of the game."""
+
     STARTING = auto()
     PLAYING = auto()
     DYING = auto()
-
-
-class Hud:
-    """HUD for the game."""
-    def __init__(self, target: Sprite) -> None:
-        pass
 
 
 class GamePlayScene(Scene):
