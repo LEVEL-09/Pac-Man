@@ -1,6 +1,8 @@
 """In-game menus, including the main menu and its buttons."""
 
+import json
 from enum import Enum, auto
+from pathlib import Path
 
 from mlx_wrapper import (
     KEY_DOWN,
@@ -15,7 +17,7 @@ from mlx_wrapper import (
 from pacman.base import Scene
 from pacman.ghost import Blinky, Clyde, Ghost, GhostState, Inky, Pinky
 from pacman.maze import Maze, PacGumType
-from pacman.menus import PauseMenu
+from pacman.menus import MainMenu, PauseMenu
 from pacman.player import Player
 from pacman.ui import Keyboard
 
@@ -301,7 +303,18 @@ class EndScene(Scene):
 
     def _on_enter(self) -> None:
         """Handle the Enter key press."""
-        print("Enter pressed")
+        file_path = Path("highscores.json")
+        
+        file_path.touch(exist_ok=True)
+        with open(file_path, 'r+') as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {}
+            data[self.keyboard.buffer] = self.player_score
+            f.seek(0)
+            json.dump(data, f, indent=4)
+        self.game.switch_scene(MainMenu())
 
     def update(self) -> None:
         """Update the end scene."""
@@ -346,3 +359,41 @@ class EndScene(Scene):
                 self.keyboard.y - self.font.atlas.height - 50,
                 0xFFFFFFFF
             )
+
+
+class HighscoreScene(Scene):
+    def __init__(self):
+        super().__init__()
+        self.title = self.am.get_sprite("title")
+        self.font = self.am.get_font("kolostygra")
+        self.top_titles = self._create_top_titles()
+
+    def mount(self) -> None:
+        self.game.bind_key(KEY_ESC, lambda: self.game.switch_scene(MainMenu()))
+
+    def unmount(self) -> None:
+        self.game.unbind_key(KEY_ESC)
+
+    def _create_top_titles(self) -> str:
+        name = "NAME"
+        text = f"RANK {name:^50} SCORE"
+
+        return text
+
+    def _load_leaderboard(self) -> None:
+        with open("highscores.json") as f:
+            self.leaderboard = json.load(f)
+
+    def update(self) -> None:
+        self.draw_background()
+        self.title.blit(
+            self.canvas, (self.canvas.width - self.title.width) // 2, 50
+        )
+        self.font.draw_text(
+            self.canvas,
+            self.top_titles,
+            50,
+            self.title.height + 150,
+            0xFFFFFF00,
+        )
+
