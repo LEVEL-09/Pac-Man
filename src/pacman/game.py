@@ -1,6 +1,6 @@
 """Pac-Man game scene manager."""
 
-from mlx_wrapper import KEY_ESC, AssetManager, MLXApp
+from mlx_wrapper import AssetManager, MLXApp
 
 from pacman.base import GameContext, Scene
 from pacman.menus import MainMenu

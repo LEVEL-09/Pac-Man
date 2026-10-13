@@ -15,6 +15,7 @@ from mlx_wrapper import (
 from pacman.base import Scene
 from pacman.ghost import Blinky, Clyde, Ghost, GhostState, Inky, Pinky
 from pacman.maze import Maze, PacGumType
+from pacman.menus import PauseMenu
 from pacman.player import Player
 from pacman.ui import Keyboard
 
@@ -243,7 +244,7 @@ class GamePlayScene(Scene):
 
     def _pause(self) -> None:
         """Pause the level scene."""
-        # self.game.push_scene(PauseMenu(self.game))
+        self.game.push_scene(PauseMenu())
 
     def _next_level(self) -> None:
         """Go to the next level."""

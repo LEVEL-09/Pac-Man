@@ -1,6 +1,6 @@
 """Pac-Man player character."""
 
-from typing import Callable
+from collections.abc import Callable
 
 from mlx_wrapper import AssetManager
 
