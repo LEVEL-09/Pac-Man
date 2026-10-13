@@ -1,11 +1,10 @@
 """Module containing menus for the Pac-Man game."""
 
-from typing import Callable
+from collections.abc import Callable
 
 from mlx_wrapper import KEY_DOWN, KEY_ENTER, KEY_UP
 
 from pacman.base import Scene
-from pacman.scenes import GamePlayScene
 from pacman.ui import Button
 
 
@@ -95,6 +94,7 @@ class MainMenu(Menu):
 
     def __init__(self) -> None:
         """Initialize the main menu."""
+        from pacman.scenes import GamePlayScene
         super().__init__()
         self.font = self.am.get_font("kolostygra")
         self.logo = self.am.get_sprite("logo")
@@ -132,3 +132,32 @@ class MainMenu(Menu):
             0xFFFFFFFF,
             cache=True,
         )
+
+
+class PauseMenu(Menu):
+    """Pause menu of the Pac-Man game."""
+
+    def __init__(self) -> None:
+        """Initialize the pause menu."""
+        super().__init__()
+        self.add_button("Resume", lambda: self.game.pop_scene())
+        self.add_button("Cheat", lambda: print("Cheat pressed"))
+        self.add_button("Quit", self.quit)
+
+    def mount(self) -> None:
+        """Mount the pause menu, making it active and visible."""
+        super().mount()
+
+    def unmount(self) -> None:
+        """Unmount the pause menu, making it inactive and invisible."""
+        super().unmount()
+
+    def update(self) -> None:
+        """Update the pause menu canvas."""
+        self.draw_background()
+        self.draw_buttons((self.canvas.height - 300) // 2, 10)
+
+    def quit(self) -> None:
+        """Quit the game."""
+        self.game.pop_scene()
+        self.game.pop_scene()
