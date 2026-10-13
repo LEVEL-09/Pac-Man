@@ -51,7 +51,18 @@ class Button:
             focused: Whether the button should be focused initially.
                 Defaults to False.
         """
-        font = am.get_font("kolostygra")
+        self.am = am
+        self.callback: Callable[..., None] = callback
+        self.focused = focused
+        self.set_title(title)
+
+    def set_title(self, title: str) -> None:
+        """Set the title of the button and update its dimensions.
+
+        Args:
+            title: Text to display on the button.
+        """
+        font = self.am.get_font("kolostygra")
         text_w = font.measure_text(title)
         slice_w = 58
         slice_h = 64
@@ -59,25 +70,26 @@ class Button:
 
         self.w = (mid_segments + 2) * slice_w
         self.h = slice_h
+
         self.states = {
             False: Sprite.blank(self.w, slice_h),
             True: Sprite.blank(self.w, slice_h),
         }
-        self.callback: Callable[..., None] = callback
-        self.focused = focused
 
-        am.get_sprite("btn_unfocused_start").blit(self.states[False], 0, 0)
-        am.get_sprite("btn_focused_start").blit(self.states[True], 0, 0)
+        self.am.get_sprite(
+            "btn_unfocused_start"
+        ).blit(self.states[False], 0, 0)
+        self.am.get_sprite("btn_focused_start").blit(self.states[True], 0, 0)
         for _ in range(1, mid_segments + 1):
-            am.get_sprite("btn_unfocused_mid").blit(
+            self.am.get_sprite("btn_unfocused_mid").blit(
                 self.states[False], _ * slice_w, 0
             )
-            am.get_sprite("btn_focused_mid").blit(
+            self.am.get_sprite("btn_focused_mid").blit(
                 self.states[True], _ * slice_w, 0
             )
-        am.get_sprite("btn_unfocused_end").blit(
+        self.am.get_sprite("btn_unfocused_end").blit(
             self.states[False], self.w - slice_w, 0)
-        am.get_sprite("btn_focused_end").blit(
+        self.am.get_sprite("btn_focused_end").blit(
             self.states[True], self.w - slice_w, 0)
 
         font.draw_text(
