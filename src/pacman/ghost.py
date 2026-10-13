@@ -392,29 +392,31 @@ class Pinky(Ghost):
         Pinky's ambush target cell.
         """
         super().draw_path()
-        if (
-            self.player.animation_key == "appear"
-            or self.player.animation_key == "up"
-        ):
-            y = self.player.curr_cell[1] * 32 - 112 + 16
-            x = self.player.curr_cell[0] * 32
 
-            self.arrows["up"].blit(self.maze.path_canvas, x, y)
-        elif self.player.animation_key == "down":
-            y = self.player.curr_cell[1] * 32 + 16
-            x = self.player.curr_cell[0] * 32
+        if self.state == GhostState.CHASE:
+            if (
+                self.player.animation_key == "appear"
+                or self.player.animation_key == "up"
+            ):
+                y = self.player.curr_cell[1] * 32 - 112 + 16
+                x = self.player.curr_cell[0] * 32
 
-            self.arrows["down"].blit(self.maze.path_canvas, x, y)
-        elif self.player.animation_key == "left":
-            y = self.player.curr_cell[1] * 32
-            x = self.player.curr_cell[0] * 32 - 112 + 16
+                self.arrows["up"].blit(self.maze.path_canvas, x, y)
+            elif self.player.animation_key == "down":
+                y = self.player.curr_cell[1] * 32 + 16
+                x = self.player.curr_cell[0] * 32
 
-            self.arrows["left"].blit(self.maze.path_canvas, x, y)
-        elif self.player.animation_key == "right":
-            y = self.player.curr_cell[1] * 32
-            x = self.player.curr_cell[0] * 32 + 16
+                self.arrows["down"].blit(self.maze.path_canvas, x, y)
+            elif self.player.animation_key == "left":
+                y = self.player.curr_cell[1] * 32
+                x = self.player.curr_cell[0] * 32 - 112 + 16
 
-            self.arrows["right"].blit(self.maze.path_canvas, x, y)
+                self.arrows["left"].blit(self.maze.path_canvas, x, y)
+            elif self.player.animation_key == "right":
+                y = self.player.curr_cell[1] * 32
+                x = self.player.curr_cell[0] * 32 + 16
+
+                self.arrows["right"].blit(self.maze.path_canvas, x, y)
 
 
 class Clyde(Ghost):
@@ -482,11 +484,15 @@ class Clyde(Ghost):
     def draw_path(self) -> None:
         """Draw the ghost's path and aggro circle to the window."""
         super().draw_path()
-        self.circle.blit(
-            self.maze.path_canvas,
-            self.player.x - 154,
-            self.player.y - 154 + self.maze.y_offset
-        )
+        if self.state == GhostState.FRIGHTENED:
+            return
+
+        if self.state == GhostState.CHASE:
+            self.circle.blit(
+                self.maze.path_canvas,
+                self.player.x - 154,
+                self.player.y - 154 + self.maze.y_offset
+            )
 
 
 class Inky(Ghost):
@@ -570,26 +576,28 @@ class Inky(Ghost):
         placed near Inky's ambush target cell.
         """
         super().draw_path()
-        if (
-            self.player.animation_key == "appear"
-            or self.player.animation_key == "up"
-        ):
-            y = self.player.curr_cell[1] * 32 + 16
-            x = self.player.curr_cell[0] * 32
 
-            self.arrows["down"].blit(self.maze.path_canvas, x, y)
-        elif self.player.animation_key == "down":
-            y = self.player.curr_cell[1] * 32 - 80 + 16
-            x = self.player.curr_cell[0] * 32
+        if self.state == GhostState.CHASE:
+            if (
+                self.player.animation_key == "appear"
+                or self.player.animation_key == "up"
+            ):
+                y = self.player.curr_cell[1] * 32 + 16
+                x = self.player.curr_cell[0] * 32
 
-            self.arrows["up"].blit(self.maze.path_canvas, x, y)
-        elif self.player.animation_key == "left":
-            y = self.player.curr_cell[1] * 32
-            x = self.player.curr_cell[0] * 32 + 16
+                self.arrows["down"].blit(self.maze.path_canvas, x, y)
+            elif self.player.animation_key == "down":
+                y = self.player.curr_cell[1] * 32 - 80 + 16
+                x = self.player.curr_cell[0] * 32
 
-            self.arrows["right"].blit(self.maze.path_canvas, x, y)
-        elif self.player.animation_key == "right":
-            y = self.player.curr_cell[1] * 32
-            x = self.player.curr_cell[0] * 32 - 80 + 16
+                self.arrows["up"].blit(self.maze.path_canvas, x, y)
+            elif self.player.animation_key == "left":
+                y = self.player.curr_cell[1] * 32
+                x = self.player.curr_cell[0] * 32 + 16
 
-            self.arrows["left"].blit(self.maze.path_canvas, x, y)
+                self.arrows["right"].blit(self.maze.path_canvas, x, y)
+            elif self.player.animation_key == "right":
+                y = self.player.curr_cell[1] * 32
+                x = self.player.curr_cell[0] * 32 - 80 + 16
+
+                self.arrows["left"].blit(self.maze.path_canvas, x, y)
