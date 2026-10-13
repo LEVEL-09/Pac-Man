@@ -273,6 +273,8 @@ class EndScene(Scene):
         keyboard: Keyboard used to wait for the player to press Enter.
     """
 
+    file_path = Path("highscores.json")
+
     def __init__(self, won: bool, player_score: int) -> None:
         """Initialize the end scene.
 
@@ -303,17 +305,18 @@ class EndScene(Scene):
 
     def _on_enter(self) -> None:
         """Handle the Enter key press."""
-        file_path = Path("highscores.json")
-        
-        file_path.touch(exist_ok=True)
-        with open(file_path, 'r+') as f:
+
+        self.file_path.touch(exist_ok=True)
+        with open(self.file_path, 'r') as f:
             try:
                 data = json.load(f)
             except json.JSONDecodeError:
                 data = {}
+
+        with open(self.file_path, 'w') as f:
             data[self.keyboard.buffer] = self.player_score
-            f.seek(0)
             json.dump(data, f, indent=4)
+
         self.game.switch_scene(MainMenu())
 
     def update(self) -> None:
