@@ -15,7 +15,7 @@ from mlx_wrapper import (
 from pacman.base import Scene
 from pacman.ghost import Blinky, Clyde, Ghost, GhostState, Inky, Pinky
 from pacman.maze import Maze, PacGumType
-from pacman.menus import PauseMenu
+from pacman.menus import CheatFlags, PauseMenu
 from pacman.player import Player
 from pacman.ui import Keyboard
 
@@ -90,6 +90,7 @@ class GamePlayScene(Scene):
         self.game.unbind_key(KEY_DOWN)
         self.game.unbind_key(KEY_LEFT)
         self.game.unbind_key(KEY_RIGHT)
+        self.player.speed *= 2 if CheatFlags.x2_speed else 1
 
     def update(self) -> None:
         """Update the level scene."""
@@ -106,8 +107,8 @@ class GamePlayScene(Scene):
         self.maze.path_canvas.fill(0)
         for ghost in self.ghosts:
             ghost.draw()
-            # TODO: Check if cheat mode is enabled and draw path
-            ghost.draw_path()
+            if CheatFlags.visualize_path:
+                ghost.draw_path()
         self.maze.path_canvas.draw_to_window(0, self.maze.y_offset)
         self.player.draw()
 
@@ -211,10 +212,11 @@ class GamePlayScene(Scene):
             for g in collided_ghosts
         )
 
-        if attacking_ghosts:
+        if attacking_ghosts and not CheatFlags.invincibility:
             self._phase = Phase.DYING
             self.player.die()
-            self.player_lives -= 1
+            if not CheatFlags.inf_lives:
+                self.player_lives -= 1
             if self.player_lives == 0:
                 self.game.switch_scene(EndScene(False, self.player_score))
             return
