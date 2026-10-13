@@ -72,8 +72,13 @@ class GamePlayScene(Scene):
             Clyde(self.am, self.maze, self.player)
         ]
 
-        self.game_time = 0.
+        self.heart = self.am.get_animated_sprite("heart")
+        self.font = self.am.get_font("minecraft_medium")
+        self.heart.play()
+
+        self.game_time = self.config.game_time
         self._frightened_timer = 0.
+        self._one_second_timer = 0.
 
     def mount(self) -> None:
         """Mount the level scene."""
@@ -98,10 +103,43 @@ class GamePlayScene(Scene):
 
     def _draw_hud(self) -> None:
         """Draw the HUD."""
+        x_pad = 10
+        y = 16
+        self.font.draw_text(
+            self.canvas,
+            f"Level: {self._current_level + 1}",
+            x_pad, y,
+            0xFFFFFFFF,
+            cache=True
+        )
+        self.font.draw_text(
+            self.canvas,
+            f"Score: {self.player_score}",
+            (self.canvas.width - x_pad - self.font.measure_text(f"Score: {self.player_score}")),
+            y,
+            0xFFFFFFFF
+        )
+        y = self.maze.y_offset + (self.maze.height * 2 + 1) * 32 + 16
+        for i in range(self.player_lives):
+            self.heart.blit(self.canvas, x_pad + i * 40, y)
+
+        self._one_second_timer += self.game.dt
+        if self._one_second_timer >= 1.:
+            self.heart.update(self.game.dt)
+            min, sec = divmod(self.game_time, 60)
+            self.font.draw_text(
+                self.canvas,
+                f"{int(min):02}:{int(sec):02}",
+                (self.canvas.width - x_pad - self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
+                y,
+                0xFFFFFFFF,
+                cache=True
+            )
 
     def draw(self) -> None:
         """Draw the level scene."""
         self.draw_background()
+        self._draw_hud()
         super().draw()
         self.maze.draw()
         self.maze.path_canvas.fill(0)
@@ -116,7 +154,6 @@ class GamePlayScene(Scene):
         """Update the starting state."""
         if self.player.animations[self.player.animation_key].is_finished:
             self._phase = Phase.PLAYING
-            self.game_time = self.config.game_time
 
         self.player.update_animation(self.game.dt)
         for ghost in self.ghosts:
@@ -149,6 +186,8 @@ class GamePlayScene(Scene):
                 ghost.reset()
             self.player.reset()
             self._phase = Phase.STARTING
+        if self.player_lives == 0:
+            self.game.switch_scene(EndScene(False, self.player_score))
         self.player.update_animation(self.game.dt)
 
     def _eat_pacgum(self) -> None:
@@ -217,8 +256,6 @@ class GamePlayScene(Scene):
             self.player.die()
             if not CheatFlags.inf_lives:
                 self.player_lives -= 1
-            if self.player_lives == 0:
-                self.game.switch_scene(EndScene(False, self.player_score))
             return
 
         for ghost in collided_ghosts:

@@ -21,7 +21,7 @@ class Game(MLXApp):
         config = Config()
         super().__init__(
             (config.maze_width * 2 + 1) * 32,
-            (config.maze_height * 2 + 1) * 32,
+            (config.maze_height * 2 + 1) * 32 + 64 * 2,
             "Pac-Man",
         )
         am = AssetManager("./assets.xml")
@@ -82,6 +82,7 @@ class Game(MLXApp):
 
     def update(self) -> None:
         """Update the current scene."""
+        print(self.dt)
         if self._current_scene:
             self._current_scene.update()
             self._current_scene.draw()
