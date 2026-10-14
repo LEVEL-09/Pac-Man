@@ -219,3 +219,6 @@ __marimo__/
 
 # Pac-Man logs
 logs/
+
+# Pac-Man highscores
+highscores.json
