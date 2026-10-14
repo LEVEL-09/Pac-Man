@@ -289,7 +289,7 @@ class EndScene(Scene):
             self.title = self.am.get_sprite("win")
         else:
             self.title = self.am.get_sprite("game_over")
-        self.keyboard = Keyboard(self.ctx, 0, 0, 30)
+        self.keyboard = Keyboard(self.ctx, 0, 0, 10)
         self.keyboard.x = (self.game.width - self.keyboard.width) // 2
         self.keyboard.y = (self.game.height - self.title.height) // 2
 
@@ -365,11 +365,14 @@ class EndScene(Scene):
 
 
 class HighscoreScene(Scene):
+
+    file_path = Path("highscores.json")
+
     def __init__(self):
         super().__init__()
         self.title = self.am.get_sprite("title")
-        self.font = self.am.get_font("kolostygra")
-        self.top_titles = self._create_top_titles()
+        self.font = self.am.get_font("kolostygra_large")
+        self.leaderboard_img = self._create_leaderboard_img()
 
     def mount(self) -> None:
         self.game.bind_key(KEY_ESC, lambda: self.game.switch_scene(MainMenu()))
@@ -377,26 +380,70 @@ class HighscoreScene(Scene):
     def unmount(self) -> None:
         self.game.unbind_key(KEY_ESC)
 
-    def _create_top_titles(self) -> str:
-        name = "NAME"
-        text = f"RANK {name:^50} SCORE"
+    def _create_leaderboard_img(self) -> Sprite:
+        self.leaderboard = self._load_highscore()
+        self.leaderboard_canvas = Sprite.blank(
+            self.canvas.width,
+            self.canvas.height - self.title.height
+        )
 
-        return text
+        y_pad = 20
+        self._draw_leaderboard_entry("RANK", "NAME", "SCORE", y_pad, False)
+        y = (self.font.atlas.height + y_pad) * 2
+        for rank, (name, score) in enumerate(self.leaderboard.items(), 1):
+            self._draw_leaderboard_entry(str(rank), name, str(score), y, True)
+            y += self.font.atlas.height + y_pad
+        return self.leaderboard_canvas
 
-    def _load_leaderboard(self) -> None:
-        with open("highscores.json") as f:
-            self.leaderboard = json.load(f)
+    def _draw_leaderboard_entry(
+        self,
+        rank: str,
+        name: str,
+        score: str,
+        y: int,
+        color: bool = False
+    ) -> None:
+        col_width = self.canvas.width // 3
+        self.font.draw_text(
+            self.leaderboard_canvas,
+            rank,
+            (col_width - self.font.measure_text(rank)) // 2,
+            y,
+            0xFFFFFFFF if color else 0xFFFFFF00,
+        )
+
+        self.font.draw_text(
+            self.leaderboard_canvas,
+            name,
+            (self.canvas.width - self.font.measure_text(name)) // 2,
+            y,
+            0xFFFFFFFF if color else 0xFFFFFF00,
+        )
+
+        self.font.draw_text(
+            self.leaderboard_canvas,
+            score,
+            ((col_width * 5) - self.font.measure_text(score)) // 2,
+            y,
+            0xFFFFFFFF if color else 0xFFFFFF00,
+        )
+
+    def _load_highscore(self) -> dict[str, int]:
+        if not self.file_path.exists():
+            return {}
+
+        with open(self.file_path, 'r') as f:
+            try:
+                self.leaderboard = json.load(f)
+            except json.JSONDecodeError:
+                self.leaderboard = {}
+        return self.leaderboard
 
     def update(self) -> None:
         self.draw_background()
         self.title.blit(
             self.canvas, (self.canvas.width - self.title.width) // 2, 50
         )
-        self.font.draw_text(
-            self.canvas,
-            self.top_titles,
-            50,
-            self.title.height + 150,
-            0xFFFFFF00,
+        self.leaderboard_img.blit(
+            self.canvas, 0, self.title.height + 150
         )
-
