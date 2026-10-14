@@ -37,28 +37,6 @@ RANGES = {
 }
 
 
-def parse_args() -> Path:
-    """Parse command-line arguments and return the config file path.
-
-    Returns:
-        The path to the JSON configuration file passed on the command
-        line.
-
-    Raises:
-        ValueError: If the given path does not have a ``.json``
-            extension.
-    """
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("config", help="path to config file")
-
-    args = parser.parse_args()
-    config_path = Path(args.config)
-    if config_path.suffix != ".json":
-        raise ValueError("config file must be a JSON file")
-    return config_path
-
-
 class Config:
     """Loads, validates, and exposes the game's configuration.
 
@@ -73,7 +51,7 @@ class Config:
 
     def __init__(self) -> None:
         """Parse arguments, load the config file, and validate it."""
-        self._file_path = parse_args()
+        self._file_path = Config._parse_args()
         self._data = self.load()
         self.validate(self._data)
 
@@ -85,6 +63,28 @@ class Config:
         self.maze_width = self._data["maze"]["width"]
         self.maze_height = self._data["maze"]["height"]
         self.player_lives = self._data["player"]["lives"]
+
+    @staticmethod
+    def _parse_args() -> Path:
+        """Parse command-line arguments and return the config file path.
+    
+        Returns:
+            The path to the JSON configuration file passed on the command
+            line.
+    
+        Raises:
+            ValueError: If the given path does not have a ``.json``
+                extension.
+        """
+        parser = argparse.ArgumentParser()
+    
+        parser.add_argument("config", help="path to config file")
+    
+        args = parser.parse_args()
+        config_path = Path(args.config)
+        if config_path.suffix != ".json":
+            raise ValueError("config file must be a JSON file")
+        return config_path
 
     def load(self) -> dict[Any, Any]:
         """Load and parse the JSON configuration file.
