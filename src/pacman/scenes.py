@@ -397,7 +397,8 @@ class HighscoreScene(Scene):
         pairs: list[tuple[str, int]]
     ) -> dict[str, int]:
         leaderboard = dict(sorted(pairs, key=lambda x: x[1], reverse=True))
-        leaderboard = {k: v for k, v in leaderboard.items() if v >= 0 and k.strip()}
+        leaderboard = {k: v for k, v in leaderboard.items()
+                       if v >= 0 and k.strip()}
 
         return leaderboard
 
