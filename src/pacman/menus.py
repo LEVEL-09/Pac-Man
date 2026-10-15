@@ -150,16 +150,11 @@ class PauseMenu(Menu):
         """Initialize the pause menu."""
         super().__init__()
         self.add_button("Resume", lambda: self.game.pop_scene())
-        self.add_button("Cheat", lambda: print("Cheat pressed"))
+        self.add_button(
+            "Cheat Menu",
+            lambda: self.game.push_scene(CheatMenu())
+        )
         self.add_button("Quit", self.quit)
-
-    def mount(self) -> None:
-        """Mount the pause menu, making it active and visible."""
-        super().mount()
-
-    def unmount(self) -> None:
-        """Unmount the pause menu, making it inactive and invisible."""
-        super().unmount()
 
     def update(self) -> None:
         """Update the pause menu canvas."""
@@ -170,3 +165,80 @@ class PauseMenu(Menu):
         """Quit the game."""
         self.game.pop_scene()
         self.game.switch_scene(MainMenu())
+
+
+class CheatFlags:
+    """Cheat flags for the Pac-Man game."""
+
+    visualize_path = False
+    inf_lives = False
+    invincibility = False
+    x2_speed = False
+
+
+class CheatMenu(Menu):
+    """Cheat menu of the Pac-Man game."""
+
+    def __init__(self) -> None:
+        """Initialize the cheat menu."""
+        super().__init__()
+
+        self.add_button(
+            self._button_text("Visualize path", CheatFlags.visualize_path),
+            self._toggle_visualize_path
+        )
+        self.add_button(
+            self._button_text("∞ lives", CheatFlags.inf_lives),
+            self._toggle_inf_lives
+        )
+        self.add_button(
+            self._button_text("Invincibility", CheatFlags.invincibility),
+            self._toggle_invincibility
+        )
+        self.add_button(
+            self._button_text("X2 speed", CheatFlags.x2_speed),
+            self._toggle_x2_speed
+        )
+        self.add_button("Back", self.game.pop_scene)
+
+    def _button_text(self, title: str, is_active: bool) -> str:
+        """Format the button's text based on the title and active state.
+
+        Returns:
+            str: formatted button text.
+            is_active: Whether the cheat flag is active or not.
+        """
+        return f"{title}: {'ON' if is_active else 'OFF'}"
+
+    def _toggle_visualize_path(self) -> None:
+        """Toggle the visualize path cheat flag and updates the button text."""
+        CheatFlags.visualize_path = not CheatFlags.visualize_path
+        self.buttons[0].set_title(
+            self._button_text("Visualize path", CheatFlags.visualize_path)
+        )
+
+    def _toggle_inf_lives(self) -> None:
+        """Toggle the inf lives cheat flag and updates the button text."""
+        CheatFlags.inf_lives = not CheatFlags.inf_lives
+        self.buttons[1].set_title(
+            self._button_text("∞ lives", CheatFlags.inf_lives)
+        )
+
+    def _toggle_invincibility(self) -> None:
+        """Toggle the invincibility cheat flag and updates the button text."""
+        CheatFlags.invincibility = not CheatFlags.invincibility
+        self.buttons[2].set_title(
+            self._button_text("Invincibility", CheatFlags.invincibility)
+        )
+
+    def _toggle_x2_speed(self) -> None:
+        """Toggle the x2 speed cheat flag and updates the button text."""
+        CheatFlags.x2_speed = not CheatFlags.x2_speed
+        self.buttons[3].set_title(
+            self._button_text("X2 speed", CheatFlags.x2_speed)
+        )
+
+    def update(self) -> None:
+        """Update the scene, drawing the background and buttons."""
+        self.draw_background()
+        self.draw_buttons((self.game.height - 296) // 2, 10)
