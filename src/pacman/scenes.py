@@ -305,7 +305,6 @@ class EndScene(Scene):
 
     def _on_enter(self) -> None:
         """Handle the Enter key press."""
-
         if not self.keyboard.buffer.strip():
             return
 
@@ -377,19 +376,23 @@ class EndScene(Scene):
 
 
 class HighscoreScene(Scene):
+    """Show the top ten saved scores and allow returning to the main menu."""
 
     file_path = Path("highscores.json")
 
     def __init__(self) -> None:
+        """Initialize the title, font, and saved leaderboard."""
         super().__init__()
         self.title = self.am.get_sprite("title")
         self.font = self.am.get_font("kolostygra_large")
         self.leaderboard = self._load_highscore()
 
     def mount(self) -> None:
+        """Bind Escape to return to the main menu."""
         self.game.bind_key(KEY_ESC, lambda: self.game.switch_scene(MainMenu()))
 
     def unmount(self) -> None:
+        """Remove the Escape key binding when leaving the scene."""
         self.game.unbind_key(KEY_ESC)
 
     def _validate_leaderboard(
@@ -465,6 +468,7 @@ class HighscoreScene(Scene):
             y += self.font.atlas.height + y_pad
 
     def update(self) -> None:
+        """Draw the background, title, and top ten leaderboard entries."""
         self.draw_background()
         self.title.blit(
             self.canvas, (self.canvas.width - self.title.width) // 2, 50
