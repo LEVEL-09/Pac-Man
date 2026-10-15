@@ -32,7 +32,7 @@ DEFAULTS = {
 RANGES = {
     "game": {"level_max_time": (30, 500)},
     "score": {"pacgum": (5, 100), "super_pacgum": (5, 100), "ghost": (5, 100)},
-    "maze": {"width": (10, 50), "height": (10, 50)},
+    "maze": {"width": (15, 25), "height": (15, 25)},
     "player": {"lives": (1, 10)},
 }
 
@@ -67,19 +67,19 @@ class Config:
     @staticmethod
     def _parse_args() -> Path:
         """Parse command-line arguments and return the config file path.
-    
+
         Returns:
             The path to the JSON configuration file passed on the command
             line.
-    
+
         Raises:
             ValueError: If the given path does not have a ``.json``
                 extension.
         """
         parser = argparse.ArgumentParser()
-    
+
         parser.add_argument("config", help="path to config file")
-    
+
         args = parser.parse_args()
         config_path = Path(args.config)
         if config_path.suffix != ".json":
