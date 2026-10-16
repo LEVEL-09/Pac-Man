@@ -80,7 +80,6 @@ class GamePlayScene(Scene):
 
         self.game_time = self.config.game_time
         self._frightened_timer = 0.
-        self._one_second_timer = 0.
 
     def mount(self) -> None:
         """Mount the level scene."""
@@ -141,6 +140,7 @@ class GamePlayScene(Scene):
             color=0xFFFFFFFF
         )
         y = self.maze.y_offset + (self.maze.height * 2 + 1) * 32 + 16
+        self.heart.update(self.game.dt)
         if CheatFlags.inf_lives:
             self.font.draw_text(
                 self.canvas,
@@ -154,19 +154,16 @@ class GamePlayScene(Scene):
             for i in range(self.player_lives):
                 self.heart.blit(self.canvas, x_pad + i * 40, y)
 
-        self._one_second_timer += self.game.dt
-        if self._one_second_timer >= 1.:
-            self.heart.update(self.game.dt)
-            min, sec = divmod(self.game_time, 60)
-            self.font.draw_text(
-                self.canvas,
-                f"{int(min):02}:{int(sec):02}",
-                (self.canvas.width - x_pad -
-                    self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
-                y,
-                id='timer',
-                color=0xFFFFFFFF,
-            )
+        min, sec = divmod(self.game_time, 60)
+        self.font.draw_text(
+            self.canvas,
+            f"{int(min):02}:{int(sec):02}",
+            (self.canvas.width - x_pad -
+                self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
+            y,
+            id='timer',
+            color=0xFFFFFFFF,
+        )
 
     def draw(self) -> None:
         """Draw the level scene."""
