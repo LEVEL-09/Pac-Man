@@ -82,7 +82,6 @@ class Game(MLXApp):
 
     def update(self) -> None:
         """Update the current scene."""
-        print(self.dt)
         if self._current_scene:
             self._current_scene.update()
             self._current_scene.draw()

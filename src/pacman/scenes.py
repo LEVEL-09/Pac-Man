@@ -73,7 +73,7 @@ class GamePlayScene(Scene):
         ]
 
         self.heart = self.am.get_animated_sprite("heart")
-        self.font = self.am.get_font("minecraft_medium")
+        self.font = self.am.get_font("minecraft_large")
         self.heart.play()
 
         self.game_time = self.config.game_time
@@ -87,6 +87,7 @@ class GamePlayScene(Scene):
         self.game.bind_key(KEY_DOWN, self.player.move_down)
         self.game.bind_key(KEY_LEFT, self.player.move_left)
         self.game.bind_key(KEY_RIGHT, self.player.move_right)
+        self._apply_cheats()
 
     def unmount(self) -> None:
         """Unmount the level scene."""
@@ -95,7 +96,23 @@ class GamePlayScene(Scene):
         self.game.unbind_key(KEY_DOWN)
         self.game.unbind_key(KEY_LEFT)
         self.game.unbind_key(KEY_RIGHT)
+
+    def _apply_cheats(self) -> None:
+        """Apply cheat flags.
+
+        `CheatFlags.x2_speed`: If the speed cheat flag is enabled, double
+        the player's speed. Else, set the speed to the default value.
+
+        `CheatFlags.invincibility`: If the invincibility cheat flag is enabled,
+        lower the player's opacity. Else, set the opacity to the default value.
+        """
         self.player.speed = self.player.speed * 2 if CheatFlags.x2_speed else 4
+        for animation in self.player.animations.values():
+            for frame in animation.frames:
+                if CheatFlags.invincibility:
+                    frame.pixels[frame.pixels > 0] &= 0xB0FFFFFF
+                else:
+                    frame.pixels[frame.pixels > 0] |= 0xFF000000
 
     def update(self) -> None:
         """Update the level scene."""
@@ -115,14 +132,25 @@ class GamePlayScene(Scene):
         self.font.draw_text(
             self.canvas,
             f"Score: {self.player_score}",
-            (self.canvas.width - x_pad - self.font.measure_text(f"Score: {self.player_score}")),
+            (self.canvas.width - x_pad -
+                self.font.measure_text(f"Score: {self.player_score}")),
             y,
             id='score',
             color=0xFFFFFFFF
         )
         y = self.maze.y_offset + (self.maze.height * 2 + 1) * 32 + 16
-        for i in range(self.player_lives):
-            self.heart.blit(self.canvas, x_pad + i * 40, y)
+        if CheatFlags.inf_lives:
+            self.font.draw_text(
+                self.canvas,
+                "∞",
+                x_pad,
+                y,
+                color=0xFFFFFFFF
+            )
+            self.heart.blit(self.canvas, x_pad + 32, y)
+        else:
+            for i in range(self.player_lives):
+                self.heart.blit(self.canvas, x_pad + i * 40, y)
 
         self._one_second_timer += self.game.dt
         if self._one_second_timer >= 1.:
@@ -131,7 +159,8 @@ class GamePlayScene(Scene):
             self.font.draw_text(
                 self.canvas,
                 f"{int(min):02}:{int(sec):02}",
-                (self.canvas.width - x_pad - self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
+                (self.canvas.width - x_pad -
+                    self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
                 y,
                 id='timer',
                 color=0xFFFFFFFF,
@@ -148,7 +177,8 @@ class GamePlayScene(Scene):
             ghost.draw()
             if CheatFlags.visualize_path:
                 ghost.draw_path()
-        self.maze.path_canvas.draw_to_window(0, self.maze.y_offset)
+        if CheatFlags.visualize_path:
+            self.maze.path_canvas.draw_to_window(0, self.maze.y_offset)
         self.player.draw()
 
     def _update_starting(self) -> None:
@@ -295,6 +325,7 @@ class GamePlayScene(Scene):
         self.player.reset()
         for ghost in self.ghosts:
             ghost.reset()
+        self.font.clear_cache()
 
 
 class EndScene(Scene):

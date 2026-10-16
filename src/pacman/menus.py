@@ -182,7 +182,7 @@ class CheatMenu(Menu):
             self._toggle_visualize_path
         )
         self.add_button(
-            self._button_text("∞ lives", CheatFlags.inf_lives),
+            self._button_text("Infinite lives", CheatFlags.inf_lives),
             self._toggle_inf_lives
         )
         self.add_button(
@@ -215,7 +215,7 @@ class CheatMenu(Menu):
         """Toggle the inf lives cheat flag and updates the button text."""
         CheatFlags.inf_lives = not CheatFlags.inf_lives
         self.buttons[1].set_title(
-            self._button_text("∞ lives", CheatFlags.inf_lives)
+            self._button_text("Infinite lives", CheatFlags.inf_lives)
         )
 
     def _toggle_invincibility(self) -> None:
