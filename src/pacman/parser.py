@@ -8,19 +8,10 @@ resulting settings as attributes for use by the rest of the game.
 
 import argparse
 import logging
-import os
 from pathlib import Path
 from typing import Any
 
 import commentjson
-
-os.makedirs("logs", exist_ok=True)
-logging.basicConfig(
-    filename="logs/pacman.log",
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
-)
 
 DEFAULTS = {
     "game": {"level_max_time": 90},
@@ -32,31 +23,9 @@ DEFAULTS = {
 RANGES = {
     "game": {"level_max_time": (30, 500)},
     "score": {"pacgum": (5, 100), "super_pacgum": (5, 100), "ghost": (5, 100)},
-    "maze": {"width": (10, 50), "height": (10, 50)},
+    "maze": {"width": (15, 25), "height": (15, 25)},
     "player": {"lives": (1, 10)},
 }
-
-
-def parse_args() -> Path:
-    """Parse command-line arguments and return the config file path.
-
-    Returns:
-        The path to the JSON configuration file passed on the command
-        line.
-
-    Raises:
-        ValueError: If the given path does not have a ``.json``
-            extension.
-    """
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("config", help="path to config file")
-
-    args = parser.parse_args()
-    config_path = Path(args.config)
-    if config_path.suffix != ".json":
-        raise ValueError("config file must be a JSON file")
-    return config_path
 
 
 class Config:
@@ -69,11 +38,10 @@ class Config:
     ``pacgum_score``, ``maze_seed``, etc.).
     """
 
-    logger = logging.getLogger()
-
-    def __init__(self) -> None:
+    def __init__(self, logger: logging.Logger) -> None:
         """Parse arguments, load the config file, and validate it."""
-        self._file_path = parse_args()
+        self.logger = logger
+        self._file_path = Config._parse_args()
         self._data = self.load()
         self.validate(self._data)
 
@@ -85,6 +53,28 @@ class Config:
         self.maze_width = self._data["maze"]["width"]
         self.maze_height = self._data["maze"]["height"]
         self.player_lives = self._data["player"]["lives"]
+
+    @staticmethod
+    def _parse_args() -> Path:
+        """Parse command-line arguments and return the config file path.
+
+        Returns:
+            The path to the JSON configuration file passed on the command
+            line.
+
+        Raises:
+            ValueError: If the given path does not have a ``.json``
+                extension.
+        """
+        parser = argparse.ArgumentParser()
+
+        parser.add_argument("config", help="path to config file")
+
+        args = parser.parse_args()
+        config_path = Path(args.config)
+        if config_path.suffix != ".json":
+            raise ValueError("config file must be a JSON file")
+        return config_path
 
     def load(self) -> dict[Any, Any]:
         """Load and parse the JSON configuration file.

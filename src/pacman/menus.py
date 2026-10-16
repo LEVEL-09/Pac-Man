@@ -94,7 +94,7 @@ class MainMenu(Menu):
 
     def __init__(self) -> None:
         """Initialize the main menu."""
-        from pacman.scenes import GamePlayScene
+        from pacman.scenes import GamePlayScene, HighscoreScene
         super().__init__()
         self.font = self.am.get_font("kolostygra")
         self.logo = self.am.get_sprite("logo")
@@ -102,8 +102,14 @@ class MainMenu(Menu):
             "Start",
             lambda: self.game.switch_scene(GamePlayScene())
         )
-        self.add_button("Leaderboard", lambda: print("Leaderboard pressed"))
-        self.add_button("Quit", lambda: print("quit pressed"))
+        self.add_button(
+            "Leaderboard",
+            lambda: self.game.switch_scene(HighscoreScene())
+        )
+        self.add_button(
+            "Quit",
+            lambda: print("quit pressed")
+        )
 
     def update(self) -> None:
         """Update the main menu canvas."""
@@ -126,7 +132,7 @@ class MainMenu(Menu):
             color=0xFFFFFFFF
         )
         y += self.font.atlas.height + y_pad
-        contributors = "Adnan BOUZKRAOUI & Mohammed KHOUBAZ"
+        contributors = "Adnan BOUZKRAOUI & Mohamed KHOUBAZ"
         self.font.draw_text(
             self.canvas,
             contributors,
@@ -158,7 +164,7 @@ class PauseMenu(Menu):
     def quit(self) -> None:
         """Quit the game."""
         self.game.pop_scene()
-        self.game.pop_scene()
+        self.game.switch_scene(MainMenu())
 
 
 class CheatFlags:

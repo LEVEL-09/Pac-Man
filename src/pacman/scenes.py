@@ -1,6 +1,8 @@
 """In-game menus, including the main menu and its buttons."""
 
+import json
 from enum import Enum, auto
+from pathlib import Path
 
 from mlx_wrapper import (
     KEY_DOWN,
@@ -15,7 +17,7 @@ from mlx_wrapper import (
 from pacman.base import Scene
 from pacman.ghost import Blinky, Clyde, Ghost, GhostState, Inky, Pinky
 from pacman.maze import Maze, PacGumType
-from pacman.menus import CheatFlags, PauseMenu
+from pacman.menus import MainMenu, CheatFlags, PauseMenu
 from pacman.player import Player
 from pacman.ui import Keyboard
 
@@ -342,6 +344,8 @@ class EndScene(Scene):
         keyboard: Keyboard used to wait for the player to press Enter.
     """
 
+    file_path = Path("highscores.json")
+
     def __init__(self, won: bool, player_score: int) -> None:
         """Initialize the end scene.
 
@@ -356,7 +360,7 @@ class EndScene(Scene):
             self.title = self.am.get_sprite("win")
         else:
             self.title = self.am.get_sprite("game_over")
-        self.keyboard = Keyboard(self.ctx, 0, 0, 30)
+        self.keyboard = Keyboard(self.ctx, 0, 0, 10)
         self.keyboard.x = (self.game.width - self.keyboard.width) // 2
         self.keyboard.y = (self.game.height - self.title.height) // 2
 
@@ -372,7 +376,30 @@ class EndScene(Scene):
 
     def _on_enter(self) -> None:
         """Handle the Enter key press."""
-        print("Enter pressed")
+        if not self.keyboard.buffer.strip():
+            return
+
+        self.file_path.touch(exist_ok=True)
+        try:
+            with open(self.file_path, 'r') as f:
+                data = json.load(f)
+        except json.JSONDecodeError:
+            self.logger.warning(
+                "highscores data is corrupted, resetting to empty"
+            )
+            data = {}
+        except OSError:
+            pass
+
+        try:
+            with open(self.file_path, 'w') as f:
+                data[self.keyboard.buffer] = self.player_score
+                json.dump(data, f, indent=4)
+                self.logger.info("Score saved successfully")
+        except OSError:
+            self.logger.error("Failed to save score")
+
+        self.game.switch_scene(MainMenu())
 
     def update(self) -> None:
         """Update the end scene."""
@@ -418,3 +445,104 @@ class EndScene(Scene):
                 id='username',
                 color=0xFFFFFFFF
             )
+
+
+class HighscoreScene(Scene):
+    """Show the top ten saved scores and allow returning to the main menu."""
+
+    file_path = Path("highscores.json")
+
+    def __init__(self) -> None:
+        """Initialize the title, font, and saved leaderboard."""
+        super().__init__()
+        self.title = self.am.get_sprite("title")
+        self.font = self.am.get_font("kolostygra_large")
+        self.leaderboard = self._load_highscore()
+
+    def mount(self) -> None:
+        """Bind Escape to return to the main menu."""
+        self.game.bind_key(KEY_ESC, lambda: self.game.switch_scene(MainMenu()))
+
+    def unmount(self) -> None:
+        """Remove the Escape key binding when leaving the scene."""
+        self.game.unbind_key(KEY_ESC)
+
+    def _validate_leaderboard(
+        self,
+        pairs: list[tuple[str, int]]
+    ) -> dict[str, int]:
+        leaderboard = dict(sorted(pairs, key=lambda x: x[1], reverse=True))
+        leaderboard = {k: v for k, v in leaderboard.items()
+                       if v >= 0 and k.strip()}
+
+        return leaderboard
+
+    def _load_highscore(self) -> dict[str, int]:
+        if not self.file_path.exists():
+            self.logger.warning(f"Highscore file not found: {self.file_path}")
+            return {}
+
+        try:
+            with open(self.file_path, 'r') as f:
+                self.leaderboard = json.load(
+                    f,
+                    object_pairs_hook=self._validate_leaderboard,
+                )
+        except (json.JSONDecodeError, OSError):
+            self.logger.warning(f"Failed to load highscore: {self.file_path}")
+            self.leaderboard = {}
+        return self.leaderboard
+
+    def _draw_leaderboard_entry(
+        self,
+        rank: str,
+        name: str,
+        score: str,
+        y: int,
+        color: bool = False
+    ) -> None:
+        col_width = self.canvas.width // 3
+        self.font.draw_text(
+            self.canvas,
+            rank,
+            (col_width - self.font.measure_text(rank)) // 2,
+            y + self.title.height + 150,
+            0xFFFFFFFF if color else 0xFFFFFF00,
+            cache=True
+        )
+
+        self.font.draw_text(
+            self.canvas,
+            name,
+            (self.canvas.width - self.font.measure_text(name)) // 2,
+            y + self.title.height + 150,
+            0xFFFFFFFF if color else 0xFFFFFF00,
+            cache=True
+        )
+
+        self.font.draw_text(
+            self.canvas,
+            score,
+            ((col_width * 5) - self.font.measure_text(score)) // 2,
+            y + self.title.height + 150,
+            0xFFFFFFFF if color else 0xFFFFFF00,
+            cache=True
+        )
+
+    def _create_leaderboard_img(self) -> None:
+        y_pad = 20
+        self._draw_leaderboard_entry("RANK", "NAME", "SCORE", y_pad, False)
+        y = (self.font.atlas.height + y_pad) * 2
+        for rank, (name, score) in enumerate(self.leaderboard.items(), 1):
+            if rank > 10:
+                break
+            self._draw_leaderboard_entry(str(rank), name, str(score), y, True)
+            y += self.font.atlas.height + y_pad
+
+    def update(self) -> None:
+        """Draw the background, title, and top ten leaderboard entries."""
+        self.draw_background()
+        self.title.blit(
+            self.canvas, (self.canvas.width - self.title.width) // 2, 50
+        )
+        self._create_leaderboard_img()
