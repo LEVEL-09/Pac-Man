@@ -1,5 +1,7 @@
 """Module containing base classes for the game."""
 
+import logging
+import os
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, ClassVar
 
@@ -12,6 +14,14 @@ from pacman.parser import Config
 if TYPE_CHECKING:
     from pacman.game import Game
 
+os.makedirs("logs", exist_ok=True)
+logging.basicConfig(
+    filename="logs/pacman.log",
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    level=logging.INFO,
+)
+
 
 class GameContext:
     """App-wide services shared by scenes/components.
@@ -22,21 +32,30 @@ class GameContext:
         game: Game instance.
         am: Asset manager.
         config: Game configuration.
+        logger: Logger instance.
     """
 
     _current: ClassVar["GameContext | None"] = None
 
-    def __init__(self, game: Game, am: AssetManager, config: Config) -> None:
+    def __init__(
+        self,
+        game: Game,
+        am: AssetManager,
+        config: Config,
+        logger: logging.Logger,
+    ) -> None:
         """Initialize the game context.
 
         Args:
             game: The game instance.
             am: The asset manager.
             config: The game configuration.
+            logger: The logger instance.
         """
         self.game = game
         self.am = am
         self.config = config
+        self.logger = logger
 
     @classmethod
     def set_context(cls, context: "GameContext") -> None:
@@ -122,6 +141,11 @@ class Scene(ABC):
     def am(self) -> AssetManager:
         """AssetManager: asset manager."""
         return self.ctx.am
+
+    @property
+    def logger(self) -> logging.Logger:
+        """logging.Logger: logger instance."""
+        return self.ctx.logger
 
     @property
     def config(self) -> Config:

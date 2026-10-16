@@ -1,5 +1,7 @@
 """Pac-Man game scene manager."""
 
+import logging
+
 from mlx_wrapper import AssetManager, MLXApp
 
 from pacman.base import GameContext, Scene
@@ -13,19 +15,21 @@ class Game(MLXApp):
     Attributes:
         config: game parsed configuration from the config file.
         am: AssetManager instance.
+        logger: Logger instance.
 
     """
 
     def __init__(self) -> None:
         """Initialize the game."""
-        config = Config()
+        logger = logging.getLogger()
+        config = Config(logger)
         super().__init__(
             (config.maze_width * 2 + 1) * 32,
             (config.maze_height * 2 + 1) * 32,
             "Pac-Man",
         )
         am = AssetManager("./assets.xml")
-        GameContext.set_context(GameContext(self, am, config))
+        GameContext.set_context(GameContext(self, am, config, logger))
 
         # Scene stack
         self._scene_stack: list[Scene] = []
