@@ -92,8 +92,7 @@ class Ghost(ABC, MovingEntity):
         no longer valid (e.g. the next tile isn't adjacent), recomputes it
         via `find_path`.
         """
-        # TODO: recompute path only if target_cell changed
-        self.find_path()
+        # self.find_path()
         if self.path and self.path[0] == self.curr_cell:
             self.path.pop(0)
 
@@ -165,7 +164,10 @@ class Ghost(ABC, MovingEntity):
         Args:
             target (tuple[int, int]): New target cell.
         """
+        if target == self.target_cell:
+            return
         self.target_cell = target
+        self.find_path()
 
     def draw_path(self) -> None:
         """Draw the ghost's current path onto the maze for debugging.

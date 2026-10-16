@@ -97,14 +97,14 @@ class Button:
             title,
             (self.states[False].width - text_w) // 2,
             (self.states[False].height - font.atlas.height) // 2 - 3,
-            0xFF9B6800,
+            color=0xFF9B6800
         )
         font.draw_text(
             self.states[True],
             title,
             (self.states[True].width - text_w) // 2,
             (self.states[True].height - font.atlas.height) // 2 - 3,
-            0xFF189FC2,
+            color=0xFF189FC2,
         )
 
     def draw(self, target: Sprite, x: int, y: int) -> None:
@@ -241,14 +241,14 @@ class Keyboard:
             instructions[0],
             (self.width - self.font_sm.measure_text(instructions[0])) // 2,
             y,
-            0xFFFFFFFF,
+            color=0xFFFFFFFF,
         )
         self.font_sm.draw_text(
             self.layouts[False],
             instructions[0],
             (self.width - self.font_sm.measure_text(instructions[0])) // 2,
             y,
-            0xFFFFFFFF,
+            color=0xFFFFFFFF,
         )
         y += self.font_sm.atlas.height + self.pad
         self.font_sm.draw_text(
@@ -256,14 +256,14 @@ class Keyboard:
             instructions[1],
             (self.width - self.font_sm.measure_text(instructions[1])) // 2,
             y,
-            0xFFFFFFFF,
+            color=0xFFFFFFFF,
         )
         self.font_sm.draw_text(
             self.layouts[False],
             instructions[1],
             (self.width - self.font_sm.measure_text(instructions[1])) // 2,
             y,
-            0xFFFFFFFF,
+            color=0xFFFFFFFF,
         )
 
     def _draw_char(
@@ -300,7 +300,7 @@ class Keyboard:
             char,
             x + self.pad + self.border + self.margin,
             y + self.border + self.margin,
-            color,
+            color=color,
         )
 
     # TODO: decide whether to keep draw or blit

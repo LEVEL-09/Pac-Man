@@ -25,7 +25,7 @@ class Game(MLXApp):
         config = Config(logger)
         super().__init__(
             (config.maze_width * 2 + 1) * 32,
-            (config.maze_height * 2 + 1) * 32,
+            (config.maze_height * 2 + 1) * 32 + 64 * 2,
             "Pac-Man",
         )
         am = AssetManager("./assets.xml")
