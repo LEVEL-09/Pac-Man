@@ -122,8 +122,8 @@ class MainMenu(Menu):
             "Contributors",
             (self.canvas.width - self.font.measure_text("Contributors:")) // 2,
             y,
-            0xFFFFFFFF,
             cache=True,
+            color=0xFFFFFFFF
         )
         y += self.font.atlas.height + y_pad
         contributors = "Adnan BOUZKRAOUI & Mohammed KHOUBAZ"
@@ -132,8 +132,8 @@ class MainMenu(Menu):
             contributors,
             (self.canvas.width - self.font.measure_text(contributors)) // 2,
             y,
-            0xFFFFFFFF,
             cache=True,
+            color=0xFFFFFFFF
         )
 
 

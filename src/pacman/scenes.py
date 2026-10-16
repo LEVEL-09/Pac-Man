@@ -95,7 +95,7 @@ class GamePlayScene(Scene):
         self.game.unbind_key(KEY_DOWN)
         self.game.unbind_key(KEY_LEFT)
         self.game.unbind_key(KEY_RIGHT)
-        self.player.speed *= 2 if CheatFlags.x2_speed else 1
+        self.player.speed = self.player.speed * 2 if CheatFlags.x2_speed else 4
 
     def update(self) -> None:
         """Update the level scene."""
@@ -109,15 +109,16 @@ class GamePlayScene(Scene):
             self.canvas,
             f"Level: {self._current_level + 1}",
             x_pad, y,
-            0xFFFFFFFF,
-            cache=True
+            cache=True,
+            color=0xFFFFFFFF
         )
         self.font.draw_text(
             self.canvas,
             f"Score: {self.player_score}",
             (self.canvas.width - x_pad - self.font.measure_text(f"Score: {self.player_score}")),
             y,
-            0xFFFFFFFF
+            id='score',
+            color=0xFFFFFFFF
         )
         y = self.maze.y_offset + (self.maze.height * 2 + 1) * 32 + 16
         for i in range(self.player_lives):
@@ -132,8 +133,8 @@ class GamePlayScene(Scene):
                 f"{int(min):02}:{int(sec):02}",
                 (self.canvas.width - x_pad - self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
                 y,
-                0xFFFFFFFF,
-                cache=True
+                id='timer',
+                color=0xFFFFFFFF,
             )
 
     def draw(self) -> None:
@@ -359,8 +360,8 @@ class EndScene(Scene):
             f"Your score: {self.player_score}",
             text_center,
             self.title.height + 150,
-            0xFFFFFF00,
-            cache=True
+            cache=True,
+            color=0xFFFFFF00
         )
         text_center = (
             self.canvas.width - self.font.measure_text("Type in your username")
@@ -370,8 +371,8 @@ class EndScene(Scene):
             "Type in your username",
             text_center,
             self.keyboard.y - self.font.atlas.height - 100,
-            0xFFFFFFFF,
-            cache=True
+            cache=True,
+            color=0xFFFFFFFF
         )
         if self.keyboard.buffer:
             text_center = (
@@ -383,5 +384,6 @@ class EndScene(Scene):
                 self.keyboard.buffer,
                 text_center,
                 self.keyboard.y - self.font.atlas.height - 50,
-                0xFFFFFFFF
+                id='username',
+                color=0xFFFFFFFF
             )
