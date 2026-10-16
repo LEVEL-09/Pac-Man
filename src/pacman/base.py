@@ -32,21 +32,30 @@ class GameContext:
         game: Game instance.
         am: Asset manager.
         config: Game configuration.
+        logger: Logger instance.
     """
 
     _current: ClassVar["GameContext | None"] = None
 
-    def __init__(self, game: Game, am: AssetManager, config: Config) -> None:
+    def __init__(
+        self,
+        game: Game,
+        am: AssetManager,
+        config: Config,
+        logger: logging.Logger,
+    ) -> None:
         """Initialize the game context.
 
         Args:
             game: The game instance.
             am: The asset manager.
             config: The game configuration.
+            logger: The logger instance.
         """
         self.game = game
         self.am = am
         self.config = config
+        self.logger = logger
 
     @classmethod
     def set_context(cls, context: "GameContext") -> None:
@@ -111,7 +120,6 @@ class Scene(ABC):
         canvas: canvas to draw on.
     """
 
-    logger = logging.getLogger()
     USE_STARFIELD: ClassVar[bool] = True
 
     def __init__(self) -> None:
@@ -133,6 +141,11 @@ class Scene(ABC):
     def am(self) -> AssetManager:
         """AssetManager: asset manager."""
         return self.ctx.am
+
+    @property
+    def logger(self) -> logging.Logger:
+        """logging.Logger: logger instance."""
+        return self.ctx.logger
 
     @property
     def config(self) -> Config:

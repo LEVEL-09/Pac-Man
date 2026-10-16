@@ -8,19 +8,10 @@ resulting settings as attributes for use by the rest of the game.
 
 import argparse
 import logging
-import os
 from pathlib import Path
 from typing import Any
 
 import commentjson
-
-os.makedirs("logs", exist_ok=True)
-logging.basicConfig(
-    filename="logs/pacman.log",
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    level=logging.INFO,
-)
 
 DEFAULTS = {
     "game": {"level_max_time": 90},
@@ -47,10 +38,9 @@ class Config:
     ``pacgum_score``, ``maze_seed``, etc.).
     """
 
-    logger = logging.getLogger()
-
-    def __init__(self) -> None:
+    def __init__(self, logger: logging.Logger) -> None:
         """Parse arguments, load the config file, and validate it."""
+        self.logger = logger
         self._file_path = Config._parse_args()
         self._data = self.load()
         self.validate(self._data)
