@@ -543,3 +543,31 @@ class HighscoreScene(Scene):
             self.canvas, (self.canvas.width - self.title.width) // 2, 50
         )
         self._draw_leaderboard()
+
+
+class InstructionsScene(Scene):
+    """Instructions scene."""
+
+    def __init__(self) -> None:
+        """Initialize the instructions scene."""
+        super().__init__()
+        self.instructions_img = self.am.get_sprite("instructions")
+
+    def mount(self) -> None:
+        """Mount the instructions scene."""
+        self.game.bind_key(KEY_ESC, self.game.pop_scene)
+
+    def unmount(self) -> None:
+        """Unmount the instructions scene."""
+        self.game.unbind_key(KEY_ESC)
+
+    def update(self) -> None:
+        """Draw the background and instructions image."""
+        self.draw_background()
+
+    def draw(self) -> None:
+        super().draw()
+        self.instructions_img.draw_to_window(
+            (self.canvas.width - self.instructions_img.width) // 2,
+            (self.canvas.height - self.instructions_img.height) // 2
+        )

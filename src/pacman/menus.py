@@ -94,7 +94,11 @@ class MainMenu(Menu):
 
     def __init__(self) -> None:
         """Initialize the main menu."""
-        from pacman.scenes import GamePlayScene, HighscoreScene
+        from pacman.scenes import (
+            GamePlayScene,
+            HighscoreScene,
+            InstructionsScene
+        )
         super().__init__()
         self.font = self.am.get_font("kolostygra")
         self.logo = self.am.get_sprite("logo")
@@ -105,6 +109,10 @@ class MainMenu(Menu):
         self.add_button(
             "Leaderboard",
             lambda: self.game.switch_scene(HighscoreScene())
+        )
+        self.add_button(
+            "Instructions",
+            lambda: self.game.switch_scene(InstructionsScene())
         )
         self.add_button(
             "Quit",

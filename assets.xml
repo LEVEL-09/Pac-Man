@@ -13,6 +13,8 @@
         <!-- interface -->
         <sprite id="logo" path="interface/logo-1.png"/>
         <sprite id="title" path="interface/logo-title.png"/>
+
+        <sprite id="instructions" path="interface/instructions.png"/>
         <sprite id="btn_focused_start" path="interface/btn-focused-bg-start.png"/>
         <sprite id="btn_focused_mid" path="interface/btn-focused-bg-mid.png"/>
         <sprite id="btn_focused_end" path="interface/btn-focused-bg-end.png"/>
