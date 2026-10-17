@@ -566,6 +566,7 @@ class InstructionsScene(Scene):
         self.draw_background()
 
     def draw(self) -> None:
+        """Draw the instructions image."""
         super().draw()
         self.instructions_img.draw_to_window(
             (self.canvas.width - self.instructions_img.width) // 2,
