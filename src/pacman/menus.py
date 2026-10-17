@@ -2,7 +2,7 @@
 
 from collections.abc import Callable
 
-from mlx_wrapper import KEY_DOWN, KEY_ENTER, KEY_UP
+from mlx_wrapper import KEY_DOWN, KEY_ENTER, KEY_ESC, KEY_UP
 
 from pacman.base import Scene
 from pacman.ui import Button
@@ -156,6 +156,16 @@ class PauseMenu(Menu):
         )
         self.add_button("Quit", self.quit)
 
+    def mount(self) -> None:
+        """Bind Escape to return to the Gameplay."""
+        super().mount()
+        self.game.bind_key(KEY_ESC, lambda: self.game.pop_scene())
+
+    def unmount(self) -> None:
+        """Unbind Escape."""
+        super().unmount()
+        self.game.unbind_key(KEY_ESC)
+
     def update(self) -> None:
         """Update the pause menu canvas."""
         self.draw_background()
@@ -199,7 +209,16 @@ class CheatMenu(Menu):
             self._button_text("X2 speed", CheatFlags.x2_speed),
             self._toggle_x2_speed
         )
-        self.add_button("Back", self.game.pop_scene)
+
+    def mount(self) -> None:
+        """Bind Escape to return to the Main Menu."""
+        super().mount()
+        self.game.bind_key(KEY_ESC, lambda: self.game.pop_scene())
+
+    def unmount(self) -> None:
+        """Unbind Escape."""
+        super().unmount()
+        self.game.unbind_key(KEY_ESC)
 
     def _button_text(self, title: str, is_active: bool) -> str:
         """Format the button's text based on the title and active state.
