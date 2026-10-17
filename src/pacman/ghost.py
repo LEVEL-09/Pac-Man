@@ -483,6 +483,18 @@ class Clyde(Ghost):
             self.target_cell = self.start_cell
             self.circle.pixels[self.circle.pixels > 0] &= 0x7FFFFFFF
 
+    def eaten_mode(self) -> None:
+        """Target the Clyde assigned corner after being eaten.
+
+        Switches to `GhostState.CHASE` once the ghost reaches its corner.
+        Also sets the next direction to move towards the corner.
+        """
+        self.set_target(self.start_cell)
+
+        if self.curr_cell == self.start_cell:
+            self.state = GhostState.CHASE
+            self.next_dx, self.next_dy = 0, -1
+
     def draw_path(self) -> None:
         """Draw the ghost's path and aggro circle to the window."""
         super().draw_path()
