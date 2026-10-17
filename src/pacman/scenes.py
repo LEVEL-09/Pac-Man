@@ -65,6 +65,7 @@ class GamePlayScene(Scene):
             self.config.maze_seed,
             10
         )
+        self.maze.create_maze_sprite(0)
         self.player = Player(self.am, self.maze, 4, self._eat_pacgum)
 
         self.ghosts = [
@@ -98,6 +99,13 @@ class GamePlayScene(Scene):
         self.game.unbind_key(KEY_LEFT)
         self.game.unbind_key(KEY_RIGHT)
 
+    def cleanup(self) -> None:
+        """Clean up gameplay allocated resources used by the level scene."""
+        self.blank.destroy()
+        self.font.clear_cache()
+        self.maze.cleanup()
+        super().cleanup()
+
     def _apply_cheats(self) -> None:
         """Apply cheat flags.
 
@@ -107,7 +115,7 @@ class GamePlayScene(Scene):
         `CheatFlags.invincibility`: If the invincibility cheat flag is enabled,
         lower the player's opacity. Else, set the opacity to the default value.
         """
-        self.player.speed = self.player.speed * 2 if CheatFlags.x2_speed else 4
+        self.player.speed = 6 if CheatFlags.x2_speed else 4
         for animation in self.player.animations.values():
             for frame in animation.frames:
                 if CheatFlags.invincibility:
@@ -371,6 +379,12 @@ class EndScene(Scene):
         self.keyboard.unmount()
         self.game.unbind_key(KEY_ENTER)
 
+    def cleanup(self) -> None:
+        """Clean up resources used by the end scene."""
+        self.keyboard.cleanup()
+        self.font.clear_cache()
+        super().cleanup()
+
     def _on_enter(self) -> None:
         """Handle the Enter key press."""
         if not self.keyboard.buffer.strip():
@@ -464,6 +478,11 @@ class HighscoreScene(Scene):
         """Remove the Escape key binding when leaving the scene."""
         self.game.unbind_key(KEY_ESC)
 
+    def cleanup(self) -> None:
+        """Clean up resources used by the highscore scene."""
+        self.font.clear_cache()
+        super().cleanup()
+
     def _validate_leaderboard(
         self,
         pairs: list[tuple[str, int]]
@@ -555,7 +574,7 @@ class InstructionsScene(Scene):
 
     def mount(self) -> None:
         """Mount the instructions scene."""
-        self.game.bind_key(KEY_ESC, self.game.pop_scene)
+        self.game.bind_key(KEY_ESC, lambda: self.game.switch_scene(MainMenu()))
 
     def unmount(self) -> None:
         """Unmount the instructions scene."""

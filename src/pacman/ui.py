@@ -48,13 +48,21 @@ class Button:
             callback: Function to call when the button is
                 pressed.
             am: Asset manager to use for rendering.
+            states: Dictionary of rendered states (focused/unfocused).
             focused: Whether the button should be focused initially.
                 Defaults to False.
         """
         self.am = am
         self.callback: Callable[..., None] = callback
+        self.states = {}
         self.focused = focused
         self.set_title(title)
+
+    def cleanup(self) -> None:
+        """Clean up resources used by the button."""
+        for sprite in self.states.values():
+            sprite.destroy()
+        self.states.clear()
 
     def set_title(self, title: str) -> None:
         """Set the title of the button and update its dimensions.
@@ -62,6 +70,9 @@ class Button:
         Args:
             title: Text to display on the button.
         """
+        if self.states:
+            self.cleanup()
+
         font = self.am.get_font("kolostygra")
         text_w = font.measure_text(title)
         slice_w = 58
@@ -212,6 +223,12 @@ class Keyboard:
         self.game.unbind_key(KEY_RIGHT)
         self.game.unbind_key(KEY_LEFT)
 
+    def cleanup(self) -> None:
+        """Clean up resources used by the keyboard."""
+        for layout in self.layouts.values():
+            layout.destroy()
+        self.layouts.clear()
+
     def _curr_layout(self) -> list[str]:
         """Get the current layout (lowercase or uppercase).
 
@@ -302,11 +319,6 @@ class Keyboard:
             y + self.border + self.margin,
             color=color,
         )
-
-    # TODO: decide whether to keep draw or blit
-    def draw(self) -> None:
-        """Draw the keyboard to the window."""
-        self.layouts[self._caps_lock].draw_to_window(self.x, self.y)
 
     def blit(self, target: Sprite) -> None:
         """Blit the keyboard to the target sprite.

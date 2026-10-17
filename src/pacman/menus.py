@@ -35,6 +35,12 @@ class Menu(Scene):
         self.game.unbind_key(KEY_UP)
         self.game.unbind_key(KEY_ENTER)
 
+    def cleanup(self) -> None:
+        """Clean up resources used by the menu."""
+        for button in self.buttons:
+            button.cleanup()
+        super().cleanup()
+
     def add_button(self, text: str, callback: Callable[..., None]) -> None:
         """Add a button to the menu.
 
@@ -114,10 +120,7 @@ class MainMenu(Menu):
             "Instructions",
             lambda: self.game.switch_scene(InstructionsScene())
         )
-        self.add_button(
-            "Quit",
-            lambda: print("quit pressed")
-        )
+        self.add_button("Quit", lambda: self.game._on_close())
 
     def update(self) -> None:
         """Update the main menu canvas."""

@@ -72,13 +72,16 @@ class Maze:
 
         self.pacgum_sprite = self.am.get_sprite('pacgum')
         self.spacgum_sprite = self.am.get_sprite('spacgum')
-        self.create_maze_sprite(0)
+        self.grid = self._convert_to_autotiled(self.maze_generator.maze)
+        self.canvas = Sprite.blank(len(self.grid[0]) * 32, len(self.grid) * 32)
 
         self.collectibles: dict[tuple[int, int], PacGumType]
+        self.path_canvas = Sprite.blank(self.canvas.width, self.canvas.height)
 
-        self.path_canvas = Sprite.blank(
-            self.canvas.width, self.canvas.height
-        )
+    def cleanup(self) -> None:
+        """Clean up resources used by the maze."""
+        self.canvas.destroy()
+        self.path_canvas.destroy()
 
     def create_maze_sprite(self, level: int) -> None:
         """Generate a level's maze and compose it into a single sprite.
@@ -94,7 +97,6 @@ class Maze:
         self.maze_generator.generate(seed=self.seeds[level])
         self.grid = self._convert_to_autotiled(self.maze_generator.maze)
 
-        self.canvas = Sprite.blank(len(self.grid[0]) * 32, len(self.grid) * 32)
         self.canvas.fill(0xFF000000)
         self.collectibles = {}
 
