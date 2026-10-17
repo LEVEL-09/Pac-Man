@@ -17,7 +17,7 @@ from mlx_wrapper import (
 from pacman.base import Scene
 from pacman.ghost import Blinky, Clyde, Ghost, GhostState, Inky, Pinky
 from pacman.maze import Maze, PacGumType
-from pacman.menus import MainMenu, CheatFlags, PauseMenu
+from pacman.menus import CheatFlags, MainMenu, PauseMenu
 from pacman.player import Player
 from pacman.ui import Keyboard
 
@@ -504,7 +504,7 @@ class HighscoreScene(Scene):
             rank,
             (col_width - self.font.measure_text(rank)) // 2,
             y + self.title.height + 150,
-            0xFFFFFFFF if color else 0xFFFFFF00,
+            color=0xFFFFFFFF if color else 0xFFFFFF00,
             cache=True
         )
 
@@ -513,7 +513,7 @@ class HighscoreScene(Scene):
             name,
             (self.canvas.width - self.font.measure_text(name)) // 2,
             y + self.title.height + 150,
-            0xFFFFFFFF if color else 0xFFFFFF00,
+            color=0xFFFFFFFF if color else 0xFFFFFF00,
             cache=True
         )
 
@@ -522,11 +522,11 @@ class HighscoreScene(Scene):
             score,
             ((col_width * 5) - self.font.measure_text(score)) // 2,
             y + self.title.height + 150,
-            0xFFFFFFFF if color else 0xFFFFFF00,
+            color=0xFFFFFFFF if color else 0xFFFFFF00,
             cache=True
         )
 
-    def _create_leaderboard_img(self) -> None:
+    def _draw_leaderboard(self) -> None:
         y_pad = 20
         self._draw_leaderboard_entry("RANK", "NAME", "SCORE", y_pad, False)
         y = (self.font.atlas.height + y_pad) * 2
@@ -542,4 +542,4 @@ class HighscoreScene(Scene):
         self.title.blit(
             self.canvas, (self.canvas.width - self.title.width) // 2, 50
         )
-        self._create_leaderboard_img()
+        self._draw_leaderboard()
