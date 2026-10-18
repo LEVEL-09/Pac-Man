@@ -54,7 +54,7 @@ class Button:
         """
         self.am = am
         self.callback: Callable[..., None] = callback
-        self.states = {}
+        self.states: dict[bool, Sprite] = {}
         self.focused = focused
         self.set_title(title)
 
