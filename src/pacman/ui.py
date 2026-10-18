@@ -171,10 +171,10 @@ class Keyboard:
         self.x, self.y = x, y
         self.text_limit = text_limit
 
-        self.font_med = ctx.am.get_font("minecraft_medium")
-        self.font_sm = ctx.am.get_font("minecraft_small")
-        char_width = self.font_med["m"][1]
-        char_height = self.font_med.atlas.height
+        self.font_lg = ctx.am.get_font("minecraft_medium")
+        self.font_med = ctx.am.get_font("minecraft_small")
+        char_width = self.font_lg["m"][1]
+        char_height = self.font_lg.atlas.height
         self.pad = 8
         self.margin = 5
         self.border = 3
@@ -185,7 +185,7 @@ class Keyboard:
         self.width = (self.square_size + self.pad) * 10 - self.pad
         self.height = (
             (self.square_size + self.pad) * 4 +
-            self.font_sm.atlas.height * 2 + self.pad
+            self.font_med.atlas.height * 2 + self.pad
         )
 
         self.layouts = {
@@ -253,32 +253,32 @@ class Keyboard:
             "arrows (←↑↓→) to navigate keyboard",
             "space-bar to confirm"
         ]
-        self.font_sm.draw_text(
+        self.font_med.draw_text(
             self.layouts[True],
             instructions[0],
-            (self.width - self.font_sm.measure_text(instructions[0])) // 2,
+            (self.width - self.font_med.measure_text(instructions[0])) // 2,
             y,
             color=0xFFFFFFFF,
         )
-        self.font_sm.draw_text(
+        self.font_med.draw_text(
             self.layouts[False],
             instructions[0],
-            (self.width - self.font_sm.measure_text(instructions[0])) // 2,
+            (self.width - self.font_med.measure_text(instructions[0])) // 2,
             y,
             color=0xFFFFFFFF,
         )
-        y += self.font_sm.atlas.height + self.pad
-        self.font_sm.draw_text(
+        y += self.font_med.atlas.height + self.pad
+        self.font_med.draw_text(
             self.layouts[True],
             instructions[1],
-            (self.width - self.font_sm.measure_text(instructions[1])) // 2,
+            (self.width - self.font_med.measure_text(instructions[1])) // 2,
             y,
             color=0xFFFFFFFF,
         )
-        self.font_sm.draw_text(
+        self.font_med.draw_text(
             self.layouts[False],
             instructions[1],
-            (self.width - self.font_sm.measure_text(instructions[1])) // 2,
+            (self.width - self.font_med.measure_text(instructions[1])) // 2,
             y,
             color=0xFFFFFFFF,
         )
@@ -312,7 +312,7 @@ class Keyboard:
             x + self.border: x + self.square_size - self.border
         ] = color
 
-        self.font_med.draw_text(
+        self.font_lg.draw_text(
             target,
             char,
             x + self.pad + self.border + self.margin,

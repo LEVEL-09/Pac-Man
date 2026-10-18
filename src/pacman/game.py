@@ -2,20 +2,12 @@
 
 import gc
 import logging
-import os
 
-import psutil
 from mlx_wrapper import AssetManager, MLXApp
 
 from pacman.base import GameContext, Scene
 from pacman.menus import MainMenu
 from pacman.parser import Config
-
-
-def get_process_memory():
-    process = psutil.Process(os.getpid())
-    mem_info = process.memory_info()
-    return mem_info.rss / (1024 ** 2)
 
 
 class Game(MLXApp):
@@ -72,7 +64,6 @@ class Game(MLXApp):
             self._current_scene.cleanup()
             self._scene_stack.pop()
             gc.collect()
-            self.mlx.mlx_func.malloc_trim(0)
         if self._current_scene:
             self._current_scene.mount()
 
@@ -90,21 +81,13 @@ class Game(MLXApp):
             self.mlx.mlx_func.malloc_trim(0)
         self.push_scene(new_scene)
 
-    def swap_scene(self) -> None:
-        """Swap the two top scenes in the stack."""
-        if self._current_scene:
-            self._current_scene.unmount()
-            tmp = self._current_scene
-            self._scene_stack[-1] = self._scene_stack[-2]
-            self._scene_stack[-2] = tmp
-            self._current_scene.mount()
-
     def update(self) -> None:
         """Update the current scene."""
-        print(f"Memory used: {get_process_memory():.2f} MB")
         if self._current_scene:
             self._current_scene.update()
             self._current_scene.draw()
 
     def on_cleanup(self) -> None:
         """Clean up resources."""
+        ctx = GameContext.get_context()
+        ctx.am.clear()
