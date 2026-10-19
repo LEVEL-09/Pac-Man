@@ -171,8 +171,8 @@ class Keyboard:
         self.x, self.y = x, y
         self.text_limit = text_limit
 
-        self.font_lg = ctx.am.get_font("minecraft_medium")
-        self.font_med = ctx.am.get_font("minecraft_small")
+        self.font_lg = ctx.am.get_font("minecraft_large")
+        self.font_med = ctx.am.get_font("minecraft_medium")
         char_width = self.font_lg["m"][1]
         char_height = self.font_lg.atlas.height
         self.pad = 8
