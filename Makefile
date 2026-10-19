@@ -17,7 +17,7 @@ debug:
 	$(PYTHON) -m pdb pac-man.py $(CONFIG)
 
 build:
-	uv run pyinstaller --distpath . pac-man.spec pac-man.py
+	uv run pyinstaller pac-man.spec pac-man.py
 
 clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache
