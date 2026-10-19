@@ -160,6 +160,14 @@ class Scene(ABC):
     def unmount(self) -> None:
         """Unmount the scene."""
 
+    def cleanup(self) -> None:
+        """Clean up scene resources.
+
+        Cleans up the canvas sprite, should be overridden for
+        additional cleanup.
+        """
+        self.canvas.destroy()
+
     @abstractmethod
     def update(self) -> None:
         """Update the scene."""

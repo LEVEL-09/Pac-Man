@@ -1,5 +1,6 @@
 """Pac-Man game scene manager."""
 
+import gc
 import logging
 
 from mlx_wrapper import AssetManager, MLXApp
@@ -60,7 +61,9 @@ class Game(MLXApp):
         """Pop the current scene from the stack."""
         if self._current_scene:
             self._current_scene.unmount()
+            self._current_scene.cleanup()
             self._scene_stack.pop()
+            gc.collect()
         if self._current_scene:
             self._current_scene.mount()
 
@@ -72,20 +75,19 @@ class Game(MLXApp):
         """
         if self._current_scene:
             self._current_scene.unmount()
+            self._current_scene.cleanup()
             self._scene_stack.pop()
+            gc.collect()
+            self.mlx.mlx_func.malloc_trim(0)
         self.push_scene(new_scene)
-
-    def swap_scene(self) -> None:
-        """Swap the two top scenes in the stack."""
-        if self._current_scene:
-            self._current_scene.unmount()
-            tmp = self._current_scene
-            self._scene_stack[-1] = self._scene_stack[-2]
-            self._scene_stack[-2] = tmp
-            self._current_scene.mount()
 
     def update(self) -> None:
         """Update the current scene."""
         if self._current_scene:
             self._current_scene.update()
             self._current_scene.draw()
+
+    def on_cleanup(self) -> None:
+        """Clean up resources."""
+        ctx = GameContext.get_context()
+        ctx.am.clear()

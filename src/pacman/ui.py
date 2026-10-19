@@ -48,13 +48,21 @@ class Button:
             callback: Function to call when the button is
                 pressed.
             am: Asset manager to use for rendering.
+            states: Dictionary of rendered states (focused/unfocused).
             focused: Whether the button should be focused initially.
                 Defaults to False.
         """
         self.am = am
         self.callback: Callable[..., None] = callback
+        self.states: dict[bool, Sprite] = {}
         self.focused = focused
         self.set_title(title)
+
+    def cleanup(self) -> None:
+        """Clean up resources used by the button."""
+        for sprite in self.states.values():
+            sprite.destroy()
+        self.states.clear()
 
     def set_title(self, title: str) -> None:
         """Set the title of the button and update its dimensions.
@@ -62,6 +70,9 @@ class Button:
         Args:
             title: Text to display on the button.
         """
+        if self.states:
+            self.cleanup()
+
         font = self.am.get_font("kolostygra")
         text_w = font.measure_text(title)
         slice_w = 58
@@ -160,10 +171,10 @@ class Keyboard:
         self.x, self.y = x, y
         self.text_limit = text_limit
 
+        self.font_lg = ctx.am.get_font("minecraft_large")
         self.font_med = ctx.am.get_font("minecraft_medium")
-        self.font_sm = ctx.am.get_font("minecraft_small")
-        char_width = self.font_med["m"][1]
-        char_height = self.font_med.atlas.height
+        char_width = self.font_lg["m"][1]
+        char_height = self.font_lg.atlas.height
         self.pad = 8
         self.margin = 5
         self.border = 3
@@ -174,7 +185,7 @@ class Keyboard:
         self.width = (self.square_size + self.pad) * 10 - self.pad
         self.height = (
             (self.square_size + self.pad) * 4 +
-            self.font_sm.atlas.height * 2 + self.pad
+            self.font_med.atlas.height * 2 + self.pad
         )
 
         self.layouts = {
@@ -212,6 +223,12 @@ class Keyboard:
         self.game.unbind_key(KEY_RIGHT)
         self.game.unbind_key(KEY_LEFT)
 
+    def cleanup(self) -> None:
+        """Clean up resources used by the keyboard."""
+        for layout in self.layouts.values():
+            layout.destroy()
+        self.layouts.clear()
+
     def _curr_layout(self) -> list[str]:
         """Get the current layout (lowercase or uppercase).
 
@@ -236,32 +253,32 @@ class Keyboard:
             "arrows (←↑↓→) to navigate keyboard",
             "space-bar to confirm"
         ]
-        self.font_sm.draw_text(
+        self.font_med.draw_text(
             self.layouts[True],
             instructions[0],
-            (self.width - self.font_sm.measure_text(instructions[0])) // 2,
+            (self.width - self.font_med.measure_text(instructions[0])) // 2,
             y,
             color=0xFFFFFFFF,
         )
-        self.font_sm.draw_text(
+        self.font_med.draw_text(
             self.layouts[False],
             instructions[0],
-            (self.width - self.font_sm.measure_text(instructions[0])) // 2,
+            (self.width - self.font_med.measure_text(instructions[0])) // 2,
             y,
             color=0xFFFFFFFF,
         )
-        y += self.font_sm.atlas.height + self.pad
-        self.font_sm.draw_text(
+        y += self.font_med.atlas.height + self.pad
+        self.font_med.draw_text(
             self.layouts[True],
             instructions[1],
-            (self.width - self.font_sm.measure_text(instructions[1])) // 2,
+            (self.width - self.font_med.measure_text(instructions[1])) // 2,
             y,
             color=0xFFFFFFFF,
         )
-        self.font_sm.draw_text(
+        self.font_med.draw_text(
             self.layouts[False],
             instructions[1],
-            (self.width - self.font_sm.measure_text(instructions[1])) // 2,
+            (self.width - self.font_med.measure_text(instructions[1])) // 2,
             y,
             color=0xFFFFFFFF,
         )
@@ -295,18 +312,13 @@ class Keyboard:
             x + self.border: x + self.square_size - self.border
         ] = color
 
-        self.font_med.draw_text(
+        self.font_lg.draw_text(
             target,
             char,
             x + self.pad + self.border + self.margin,
             y + self.border + self.margin,
             color=color,
         )
-
-    # TODO: decide whether to keep draw or blit
-    def draw(self) -> None:
-        """Draw the keyboard to the window."""
-        self.layouts[self._caps_lock].draw_to_window(self.x, self.y)
 
     def blit(self, target: Sprite) -> None:
         """Blit the keyboard to the target sprite.
