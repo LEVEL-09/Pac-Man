@@ -4,7 +4,7 @@
     <fonts>
         <font id="kolostygra_large" path="fonts/kolostygra.ttf" size="32"/>
         <font id="kolostygra" path="fonts/kolostygra.ttf" size="24"/>
-        <font id="minecraft_large" path="fonts/Minecraft.ttf" size="32" additional_chars="←↑↓→–∞"/>
+        <font id="minecraft_large" path="fonts/Minecraft.ttf" size="40" additional_chars="←↑↓→–∞"/>
         <font id="minecraft_medium" path="fonts/Minecraft.ttf" size="24" additional_chars="←↑↓→–"/>
         <font id="minecraft_small" path="fonts/Minecraft.ttf" size="16" additional_chars="←↑↓→–"/>
     </fonts>
