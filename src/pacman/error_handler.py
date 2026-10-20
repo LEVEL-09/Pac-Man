@@ -1,15 +1,20 @@
 import sys
 from types import TracebackType
-from typing import Self
+
+from mlx_wrapper import MLXError
+from typing_extensions import Self
 
 
-class FileParsingErrorHandler:
+class ErrorHandler:
     """Context manager to catch OSError or ValueError."""
 
     def __init__(self) -> None:
         self.exception = (
+            RuntimeError,
+            TypeError,
             OSError,
-            ValueError
+            ValueError,
+            MLXError
         )
 
     def __enter__(self) -> Self:
