@@ -148,16 +148,17 @@ class GamePlayScene(Scene):
             color=0xFFFFFFFF
         )
         y = self.maze.y_offset + (self.maze.height * 2 + 1) * 32 + 16
+        text_y = y - 16 + (64 - self.font.atlas.height) // 2
         self.heart.update(self.game.dt)
         if CheatFlags.inf_lives:
             self.font.draw_text(
                 self.canvas,
                 "∞",
                 x_pad,
-                y,
+                text_y,
                 color=0xFFFFFFFF
             )
-            self.heart.blit(self.canvas, x_pad + 32, y)
+            self.heart.blit(self.canvas, x_pad * 2 + 32, y)
         else:
             for i in range(self.player_lives):
                 self.heart.blit(self.canvas, x_pad + i * 40, y)
@@ -168,7 +169,7 @@ class GamePlayScene(Scene):
             f"{int(min):02}:{int(sec):02}",
             (self.canvas.width - x_pad -
                 self.font.measure_text(f"{int(min):02}:{int(sec):02}")),
-            y,
+            text_y,
             id='timer',
             color=0xFFFFFFFF,
         )
