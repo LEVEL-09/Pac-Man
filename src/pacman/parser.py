@@ -14,14 +14,14 @@ from typing import Any
 import commentjson
 
 DEFAULTS = {
-    "game": {"level_max_time": 90},
+    "game": {"level_max_time": 150},
     "score": {"pacgum": 10, "super_pacgum": 50, "ghost": 25},
-    "maze": {"seed": 42, "width": 20, "height": 20},
+    "maze": {"seed": 42, "width": 15, "height": 15},
     "player": {"lives": 3},
 }
 
 RANGES = {
-    "game": {"level_max_time": (30, 500)},
+    "game": {"level_max_time": (150, 300)},
     "score": {"pacgum": (5, 100), "super_pacgum": (5, 100), "ghost": (5, 100)},
     "maze": {"width": (15, 25), "height": (15, 25)},
     "player": {"lives": (1, 10)},

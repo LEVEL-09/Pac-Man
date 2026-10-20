@@ -7,7 +7,7 @@
 {
     "game":
     {
-        "level_max_time": 300
+        "level_max_time": 150
     },
     
     "score":
@@ -20,12 +20,12 @@
     "maze":
     {
         "seed": 43,
-        "width": 25,
-        "height": 25
+        "width": 15,
+        "height": 15
     },
     
     "player":
     {
-        "lives": 1
+        "lives": 6
     }
 }

@@ -1,13 +1,13 @@
 """Entry point script for launching the Pac-Man game."""
 
-from pacman.error_handler import FileParsingErrorHandler
+from pacman.error_handler import ErrorHandler
 from pacman.game import Game
 
 
 def main() -> None:
     """Run the Pac-Man game."""
 
-    with FileParsingErrorHandler():
+    with ErrorHandler():
         Game().start()
 
 
