@@ -2,7 +2,7 @@ CONFIG ?= config.json
 PYTHON := uv run python3
 MYPY_FLAGS := --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
-.PHONY: install run debug clean lint lint-strict test
+.PHONY: install run debug build clean lint lint-strict test re
 
 install:
 	uv sync --upgrade
@@ -33,3 +33,5 @@ lint:
 lint-strict:
 	flake8 . --exclude=.venv
 	mypy . --strict
+
+re: clean build
