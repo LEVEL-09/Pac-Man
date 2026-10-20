@@ -115,7 +115,7 @@ class GamePlayScene(Scene):
         `CheatFlags.invincibility`: If the invincibility cheat flag is enabled,
         lower the player's opacity. Else, set the opacity to the default value.
         """
-        self.player.speed = 6 if CheatFlags.x2_speed else 4
+        self.player.speed = 6 if CheatFlags.increase_speed else 4
         for animation in self.player.animations.values():
             for frame in animation.frames:
                 if CheatFlags.invincibility:
