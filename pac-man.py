@@ -6,7 +6,6 @@ from pacman.game import Game
 
 def main() -> None:
     """Run the Pac-Man game."""
-
     with ErrorHandler():
         Game().start()
 
