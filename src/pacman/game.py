@@ -2,8 +2,6 @@
 
 import gc
 import logging
-import os
-import sys
 
 from mlx_wrapper import AssetManager, MLXApp
 
@@ -31,24 +29,12 @@ class Game(MLXApp):
             (config.maze_height * 2 + 1) * 32 + 64 * 2,
             "Pac-Man",
         )
-        am = AssetManager(self._resolve_resource_path("assets.xml"))
+        am = AssetManager("assets.xml")
         GameContext.set_context(GameContext(self, am, config, logger))
 
         # Scene stack
         self._scene_stack: list[Scene] = []
         self.push_scene(MainMenu())
-
-    def _resolve_resource_path(self, relative_path: str) -> str:
-        """Get absolute path to resource, works for dev and PyInstaller.
-
-        Args:
-            relative_path: Relative path to the resource.
-        """
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            base_path = sys._MEIPASS
-        else:
-            base_path = os.path.abspath(".")
-        return os.path.join(base_path, relative_path)
 
     @property
     def _current_scene(self) -> Scene | None:

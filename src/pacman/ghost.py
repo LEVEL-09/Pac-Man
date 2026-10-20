@@ -505,7 +505,7 @@ class Clyde(Ghost):
             self.circle.blit(
                 self.maze.path_canvas,
                 self.player.x - 154,
-                self.player.y - 154 + self.maze.y_offset
+                self.player.y - 154
             )
 
 
