@@ -29,7 +29,7 @@ class Game(MLXApp):
             (config.maze_height * 2 + 1) * 32 + 64 * 2,
             "Pac-Man",
         )
-        am = AssetManager("./assets.xml")
+        am = AssetManager("assets.xml")
         GameContext.set_context(GameContext(self, am, config, logger))
 
         # Scene stack

@@ -194,7 +194,7 @@ class CheatFlags:
     visualize_path = False
     inf_lives = False
     invincibility = False
-    x2_speed = False
+    increase_speed = False
 
 
 class CheatMenu(Menu):
@@ -217,8 +217,8 @@ class CheatMenu(Menu):
             self._toggle_invincibility
         )
         self.add_button(
-            self._button_text("X2 speed", CheatFlags.x2_speed),
-            self._toggle_x2_speed
+            self._button_text("Increase speed", CheatFlags.increase_speed),
+            self._toggle_increase_speed
         )
 
     def mount(self) -> None:
@@ -261,11 +261,11 @@ class CheatMenu(Menu):
             self._button_text("Invincibility", CheatFlags.invincibility)
         )
 
-    def _toggle_x2_speed(self) -> None:
-        """Toggle the x2 speed cheat flag and updates the button text."""
-        CheatFlags.x2_speed = not CheatFlags.x2_speed
+    def _toggle_increase_speed(self) -> None:
+        """Toggle the increase speed cheat flag and updates the button text."""
+        CheatFlags.increase_speed = not CheatFlags.increase_speed
         self.buttons[3].set_title(
-            self._button_text("X2 speed", CheatFlags.x2_speed)
+            self._button_text("Increase speed", CheatFlags.increase_speed)
         )
 
     def update(self) -> None:

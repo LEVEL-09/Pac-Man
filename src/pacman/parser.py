@@ -7,6 +7,7 @@ resulting settings as attributes for use by the rest of the game.
 """
 
 import argparse
+import copy
 import logging
 from pathlib import Path
 from typing import Any
@@ -14,14 +15,14 @@ from typing import Any
 import commentjson
 
 DEFAULTS = {
-    "game": {"level_max_time": 90},
+    "game": {"level_max_time": 150},
     "score": {"pacgum": 10, "super_pacgum": 50, "ghost": 25},
-    "maze": {"seed": 42, "width": 20, "height": 20},
+    "maze": {"seed": 42, "width": 15, "height": 15},
     "player": {"lives": 3},
 }
 
 RANGES = {
-    "game": {"level_max_time": (30, 500)},
+    "game": {"level_max_time": (150, 300)},
     "score": {"pacgum": (5, 100), "super_pacgum": (5, 100), "ghost": (5, 100)},
     "maze": {"width": (15, 25), "height": (15, 25)},
     "player": {"lives": (1, 10)},
@@ -42,8 +43,15 @@ class Config:
         """Parse arguments, load the config file, and validate it."""
         self.logger = logger
         self._file_path = Config._parse_args()
-        self._data = self.load()
-        self.validate(self._data)
+
+        if self._file_path is None:
+            self.logger.warning(
+                "No configuration file provided. Using default values."
+            )
+            self._data = copy.deepcopy(DEFAULTS)
+        else:
+            self._data = self.load(self._file_path)
+            self.validate(self._data)
 
         self.game_time = self._data["game"]["level_max_time"]
         self.pacgum_score = self._data["score"]["pacgum"]
@@ -55,12 +63,12 @@ class Config:
         self.player_lives = self._data["player"]["lives"]
 
     @staticmethod
-    def _parse_args() -> Path:
+    def _parse_args() -> Path | None:
         """Parse command-line arguments and return the config file path.
 
         Returns:
             The path to the JSON configuration file passed on the command
-            line.
+            line, or ``None`` if no config file was provided.
 
         Raises:
             ValueError: If the given path does not have a ``.json``
@@ -68,16 +76,22 @@ class Config:
         """
         parser = argparse.ArgumentParser()
 
-        parser.add_argument("config", help="path to config file")
+        parser.add_argument("config", nargs="?", help="path to config file")
 
         args = parser.parse_args()
+        if args.config is None:
+            return None
+
         config_path = Path(args.config)
         if config_path.suffix != ".json":
             raise ValueError("config file must be a JSON file")
         return config_path
 
-    def load(self) -> dict[Any, Any]:
+    def load(self, file_path: Path) -> dict[Any, Any]:
         """Load and parse the JSON configuration file.
+
+        Args:
+            file_path: The path to the JSON configuration file.
 
         Returns:
             The parsed configuration as a dictionary.
@@ -89,24 +103,24 @@ class Config:
             ValueError: If the file's contents are not valid JSON.
         """
         try:
-            with open(self._file_path, "r") as f:
+            with open(file_path, "r") as f:
                 data: Any = commentjson.load(f)
 
                 if not isinstance(data, dict):
                     raise TypeError(
-                        f"Configuration file {self._file_path} "
+                        f"Configuration file {file_path} "
                         "must contain a JSON object"
                     )
                 return data
 
         except OSError as e:
             raise OSError(
-                f"Error loading file {self._file_path}:\n\t{e.strerror}"
+                f"Error loading file {file_path}:\n\t{e.strerror}"
             )
 
         except commentjson.JSONLibraryException as e:
             raise ValueError(
-                f"Error parsing JSON file {self._file_path}"
+                f"Error parsing JSON file {file_path}"
             ) from e
 
     def validate(self, data: dict[Any, Any]) -> None:
