@@ -162,4 +162,4 @@ The project was managed with a milestone-based workflow aimed at keeping each fe
 
 The project planning materials and task tracking notes are kept in the dedicated project management directory:
 
-- [Project Management](project-management/)
+- [Project Management](project-management/README.md)
